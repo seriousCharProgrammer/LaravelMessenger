@@ -20,6 +20,9 @@
     <link rel="stylesheet" href="{{asset('assets/css/responsive.css')}}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
 
+   <link rel="stylesheet" href="https://unpkg.com/nprogress@0.2.0/nprogress.css">
+
+
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
@@ -46,6 +49,7 @@
     <script src="{{asset('assets/js/venobox.min.js')}}"></script>
     <script src="{{asset('assets/js/emojionearea.min.js')}}"></script>
     <script src="{{asset('https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js')}}"></script>
+    <script src="{{asset('https://unpkg.com/nprogress@0.2.0/nprogress.js')}}"></script>
 
 
     <script src="{{asset('assets/js/main.js')}}"></script>
