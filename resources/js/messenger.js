@@ -1,3 +1,22 @@
+/****
+ * Glabal Variables
+ */
+
+let temporaryMsgId = 0;
+
+const messageForm = $(".message-form"),
+    messageInput = $(".message-input"),
+    crsf_token = $('meta[name="csrf-token"]').attr("content"),
+    chatBoxContainer = $(".wsus__chat_area_body");
+
+const getMessengerId = () => {
+    return $("meta[name=id]").attr("content");
+};
+
+const setMessengerId = (id) => {
+    $("meta[name=id]").attr("content", id);
+};
+
 /**
  * ------------------------------------------------------------
  * Reusable Messenger Component function
@@ -130,6 +149,94 @@ function IDinfo(id) {
     });
 }
 
+/******
+ *
+ *
+ * send message
+ */
+
+function sendMessage() {
+    temporaryMsgId++;
+    let tempID = `temp_${temporaryMsgId}`;
+    //let hasAttachment = !!$(".attachment-input").val();
+    let hasAttachment = $(".attachment-input").val() ? true : false;
+    const inputvalue = messageInput.val();
+
+    if (inputvalue.length > 0 || hasAttachment) {
+        const formData = new FormData($(".message-form")[0]);
+        formData.append("id", getMessengerId());
+        formData.append("temporaryMsgId", tempID);
+        formData.append("_token", crsf_token);
+
+        $.ajax({
+            method: "POST",
+            url: "messenger/send-message",
+            data: formData,
+            dataType: "JSON",
+            processData: false,
+            contentType: false,
+            beforeSend: function () {
+                if (hasAttachment) {
+                    chatBoxContainer.append(
+                        sendTempMessageCard(tempID, inputvalue, hasAttachment)
+                    );
+                } else {
+                    chatBoxContainer.append(
+                        sendTempMessageCard(tempID, inputvalue, hasAttachment)
+                    );
+                }
+                /*
+                messageForm.trigger("reset");
+                $(".emojionearea-editor").text("");
+                */
+                cancelAttachment();
+            },
+            success: function (data) {
+                const tempMsgCardElement = chatBoxContainer.find(
+                    `.message-card[data-id=${data.tempID}]`
+                );
+                tempMsgCardElement.before(data.message);
+                tempMsgCardElement.remove();
+            },
+            error: function (xhr, status, error) {},
+        });
+    }
+}
+
+function sendTempMessageCard(tempId, message, hasAttachment) {
+    if (hasAttachment) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
+          <div class="wsus__single_chat chat_right">
+            <div class="pre_loader">
+              <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            ${message.length > 0 ? `<p class="messages">${message}</p>` : ""}
+            <span class="clock"><i class="fas fa-clock"></i> now</span>
+            <a class="action" href="#"><i class="fas fa-trash"></i></a>
+          </div>
+        </div>
+      </div>`;
+    } else {
+        return ` <div class="wsus__single_chat_area message-card" data-id="${tempId}">
+          <div class="wsus__single_chat chat_right">
+            <p class="messages">${message}</p>
+            <span class="clock"><i class="fas fa-clock"></i> now</span>
+            <a class="action" href="#"><i class="fas fa-trash"></i></a>
+          </div>
+        </div>`;
+    }
+}
+
+function cancelAttachment() {
+    $(".attachment-block").addClass("d-none");
+    $(".attachment-input").val("");
+    $(".attachment-preview").attr("src", "");
+    $(".emojionearea-editor").text("");
+    messageForm.trigger("reset");
+}
+
 /**
  * ------------------------------------------------------------
  * On Dom Load
@@ -151,6 +258,7 @@ $(document).ready(function () {
         }
     });
 });
+
 /**
  *
  * close search list if clicked ioutside it
@@ -178,5 +286,21 @@ actionOnScroll(".user_search_list_result", function () {
 //click action for list-item
 $("body").on("click", ".messenger-list-item", function () {
     const userId = $(this).data("id");
+    setMessengerId(userId);
     IDinfo(userId);
+});
+
+//send mesage
+$(".message-form").on("submit", function (e) {
+    e.preventDefault();
+    sendMessage();
+});
+
+$(".attachment-input").change(function () {
+    imagePreview(this, ".attachment-preview");
+    $(".attachment-block").removeClass("d-none");
+});
+
+$(".cancel-attachment").on("click", function () {
+    cancelAttachment();
 });

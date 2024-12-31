@@ -109,17 +109,7 @@
                 <span class="visually-hidden">Loading...</span>
               </div>
             </div>
-            <a
-              class="venobox"
-              data-gall="gallery01"
-              href="images/chat_img.png"
-            >
-              <img
-                src="images/chat_img.png"
-                alt="gallery1"
-                class="img-fluid w-100"
-              />
-            </a>
+           <p class="messages">I'm fine what about you</p>
             <span class="time"> 5h ago</span>
             <a class="action" href="#"><i class="fas fa-trash"></i></a>
           </div>
@@ -128,23 +118,25 @@
 
       <div class="wsus__chat_area_footer">
         <div class="footer_message">
-          <!-- <div class="img">
-                      <img src="images/chat_img.png" alt="User" class="img-fluid">
-                      <span><i class="far fa-times"></i></span>
-                  </div> -->
-          <form action="#">
+           <div class="img d-none attachment-block">
+                      <img src="" alt="User" class="img-fluid attachment-preview">
+                      <span class="cancel-attachment"><i class="far fa-times"></i></span>
+                  </div>
+          <form action="#" class="message-form" enctype="multipart/form-data">
             <div class="file">
               <label for="file"><i class="far fa-plus"></i></label>
-              <input id="file" type="file" hidden />
+              <input id="file" type="file" hidden  class="attachment-input" name="attachment" accept="image/*"/>
             </div>
 
             <textarea
               id="example1"
               rows="1"
               placeholder="Type a message.."
+              name="message"
+              class="message-input"
             ></textarea>
-            <button><i class="fas fa-paper-plane send"></i></button>
-            <button><i class="fa-solid fa-microphone voice"></i></button>
+            <button type="submit"><i class="fas fa-paper-plane send"></i></button>
+            <button type="button"><i class="fa-solid fa-microphone voice "></i></button>
           </form>
         </div>
       </div>
