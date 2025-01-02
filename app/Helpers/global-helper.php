@@ -14,23 +14,23 @@ if(!function_exists('timeAgo'))
     }
     if($minutes <= 60) {
         if($minutes == 1) {
-            return "1 minute ago";
+            return "1m ago";
         } else {
-            return "$minutes minutes ago";
+            return "$minutes m ago";
         }
     }
     if($hours <= 24) {
         if($hours == 1) {
-            return "1 hour ago";
+            return "1 h ago";
         } else {
-            return "$hours hours ago";
+            return "$hours h ago";
         }
     }
     if($days <= 7) {
         if($days == 1) {
-            return "1 day ago";
+            return "1 d ago";
         } else {
-            return "$days days ago";
+            return "$days d ago";
         }
     }
     return date('d M Y',strtotime($timestamp));

@@ -1,13 +1,15 @@
 <div class="wsus__user_list">
     <div class="wsus__user_list_header">
-      <h3>
+      <h3 class="main-app-header">
         <span
           ><img
-            src="images/chat_list_icon.png"
+            src="{{asset('assets/images/5.png')}}"
             alt="Chat"
             class="img-fluid"
         /></span>
-        MESSAGES
+        FastChat — Lightning-Fast Messaging <span class="fa-solid fa-bolt" style="color: #0d6efd;"></span>
+
+
       </h3>
       <span
         class="setting"
@@ -84,8 +86,8 @@
           <a href="#" class="wsus__favourite_item">
             <div class="img">
               <img
-                src="images/author_img_1.jpg"
-                alt="User"
+                src=""
+                alt=""
                 class="img-fluid"
               />
               <span class="inactive"></span>
@@ -113,24 +115,12 @@
 
     <div class="wsus__user_list_area">
       <div class="top">All Messages</div>
-      <div class="wsus__user_list_area_height">
-        <div class="wsus__user_list_item">
-          <div class="img">
-            <img
-              src="images/author_img_1.jpg"
-              alt="User"
-              class="img-fluid"
-            />
-            <span class="active"></span>
-          </div>
-          <div class="text">
-            <h5>Jubaydul islam</h5>
-            <p><span>You</span> Hi, What"s your name</p>
-          </div>
-          <span class="time">10m ago</span>
-        </div>
+      <div class="wsus__user_list_area_height messenger-contacts">
+
 
       </div>
+
+
 
       <!-- <div class="wsus__user_list_liading">
                 <div class="spinner-border text-light" role="status">

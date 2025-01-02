@@ -29,5 +29,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('messenger/id-info', [MessengerController::class, 'fetchIdInfo'])->name('messenger.id-info');
     //send message route
     Route::post('messenger/send-message', [MessengerController::class, 'sendMessage'])->name('messenger.send-message');
+    Route::get('messenger/fetch-messages', [MessengerController::class, 'fetchMessages'])->name('messenger.fetch-messages');
+    Route::get('messenger/fetch-contacts', [MessengerController::class, 'fetchContacts'])->name('messenger.fetch-contacts');
 
 });

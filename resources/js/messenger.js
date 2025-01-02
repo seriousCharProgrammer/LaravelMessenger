@@ -7,7 +7,8 @@ let temporaryMsgId = 0;
 const messageForm = $(".message-form"),
     messageInput = $(".message-input"),
     crsf_token = $('meta[name="csrf-token"]').attr("content"),
-    chatBoxContainer = $(".wsus__chat_area_body");
+    chatBoxContainer = $(".wsus__chat_area_body"),
+    messengerContactBox = $(".messenger-contacts");
 
 const getMessengerId = () => {
     return $("meta[name=id]").attr("content");
@@ -125,10 +126,14 @@ function IDinfo(id) {
         url: "messenger/id-info",
         data: { id: id },
         beforeSend: function () {
+            $(".wsus__chat_area_body").removeClass("d-none");
+            $(".wsus__chat_area_header").removeClass("d-none");
+            $(".wsus__chat_area_footer").removeClass("d-none");
             NProgress.start();
             enableChatBoxLoader();
         },
         success: function (data) {
+            fetchMessages(data.fetch.id, true);
             $(".messenger-header").find("img").attr("src", data.fetch.avatar);
             $(".messenger-header").find("h4").text(data.fetch.name);
             $(".messenger-info-view .user_photo")
@@ -177,10 +182,12 @@ function sendMessage() {
             contentType: false,
             beforeSend: function () {
                 if (hasAttachment) {
+                    scrollToBottom(chatBoxContainer);
                     chatBoxContainer.append(
                         sendTempMessageCard(tempID, inputvalue, hasAttachment)
                     );
                 } else {
+                    scrollToBottom(chatBoxContainer);
                     chatBoxContainer.append(
                         sendTempMessageCard(tempID, inputvalue, hasAttachment)
                     );
@@ -237,12 +244,154 @@ function cancelAttachment() {
     messageForm.trigger("reset");
 }
 
+function showChatbox() {
+    $(".black").addClass("d-none");
+    $(".wsus__chat_area_body").removeClass("d-none");
+    $(".wsus__chat_area_header").removeClass("d-none");
+    $(".wsus__chat_area_footer").removeClass("d-none");
+
+    return true;
+}
+
+function hideChatbox() {
+    cancelAttachment();
+    $(".black").removeClass("d-none");
+    $(".wsus__chat_area_body").addClass("d-none");
+    $(".wsus__chat_area_header").addClass("d-none");
+    $(".wsus__chat_area_footer").addClass("d-none");
+
+    return true;
+}
+export { showChatbox, hideChatbox };
+
+/***
+ * fetch messeges from database
+ */
+let messegesPage = 1;
+let noMoreMessages = false;
+let messegesLoading = false;
+function fetchMessages(id, newFetch = false) {
+    if (newFetch) {
+        messegesPage = 1;
+        noMoreMessages = false;
+    }
+    if (!messegesLoading && !noMoreMessages) {
+        $.ajax({
+            method: "GET",
+            url: "messenger/fetch-messages",
+            data: {
+                _token: crsf_token,
+                id: id,
+                page: messegesPage,
+            },
+            beforeSend: function () {
+                messegesLoading = true;
+                let loader = `  <div class="text-center messages-loader">
+            <div class="spinner-border text-primary " role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>`;
+                chatBoxContainer.prepend(loader);
+            },
+            success: function (data) {
+                messegesLoading = false;
+                chatBoxContainer.find(".messages-loader").remove();
+                if (messegesPage < 2) {
+                    chatBoxContainer.html(data.messages);
+                    //scrollToBottom(chatBoxContainer);
+                } else {
+                    const lastMsg = $(chatBoxContainer)
+                        .find(".message-card")
+                        .first();
+                    const curOffset =
+                        lastMsg.offset().top - chatBoxContainer.scrollTop();
+
+                    chatBoxContainer.prepend(data.messages);
+                    chatBoxContainer.scrollTop(
+                        lastMsg.offset().top - curOffset
+                    );
+                    //scrollToBottom(chatBoxContainer);
+                }
+                noMoreMessages = messegesPage >= data?.last_page;
+                if (!noMoreMessages) {
+                    messegesPage++;
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    }
+}
+/******
+ *
+ *
+ * fetch conatct list from database
+ *
+ *
+ *
+ *
+ */
+
+let contactPage = 1;
+let noMoreContacts = false;
+let contactLoading = false;
+function getContacts() {
+    if (!contactLoading && !noMoreContacts) {
+        $.ajax({
+            method: "GET",
+            url: "messenger/fetch-contacts",
+            data: {
+                _token: crsf_token,
+                page: contactPage,
+            },
+            beforeSend: function () {
+                contactLoading = true;
+                let loader = `  <div class="text-center messages-loader">
+            <div class="spinner-border text-primary " role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>`;
+                $(".wsus__user_list_item").append(loader);
+            },
+            success: function (data) {
+                contactLoading = false;
+                $(".messages-loader").remove();
+                if (contactPage < 2) {
+                    messengerContactBox.html(data.contacts);
+                } else {
+                    messengerContactBox.append(data.contacts);
+                }
+
+                noMoreContacts = contactPage >= data?.last_page;
+                if (!noMoreContacts) {
+                    contactPage++;
+                }
+            },
+            error: function (xhr, status, error) {
+                //$(".messages-loader").remove();
+                console.log(error);
+            },
+        });
+    }
+}
+/***
+ * scroll down to bottom on action
+ */
+function scrollToBottom(container) {
+    $(container)
+        .stop()
+        .animate({
+            scrollTop: $(container)[0].scrollHeight,
+        });
+}
 /**
  * ------------------------------------------------------------
  * On Dom Load
  * ------------------------------------------------------------
  */
-
+getContacts();
+/*------------------------------*/
 $(document).ready(function () {
     $("#select_file").change(function () {
         imagePreview(this, ".profile-image-preview");
@@ -259,8 +408,7 @@ $(document).ready(function () {
     });
 });
 
-/**
- *
+/*
  * close search list if clicked ioutside it
  *
  */
@@ -288,6 +436,9 @@ $("body").on("click", ".messenger-list-item", function () {
     const userId = $(this).data("id");
     setMessengerId(userId);
     IDinfo(userId);
+    $("#search-input").val(""); // Use .val() to set the input value in jQuery
+    $(".user_search_list_result").html("");
+    page = 1;
 });
 
 //send mesage
@@ -303,4 +454,33 @@ $(".attachment-input").change(function () {
 
 $(".cancel-attachment").on("click", function () {
     cancelAttachment();
+});
+
+/***
+ * click on title return chat page
+ */
+$(".main-app-header").on("click", function () {
+    if (showChatbox()) {
+        hideChatbox();
+    }
+});
+$(".go_home").on("click", function () {
+    if (showChatbox()) {
+        hideChatbox();
+    }
+});
+
+// message pagination
+actionOnScroll(
+    ".wsus__chat_area_body",
+    function () {
+        fetchMessages(getMessengerId());
+    },
+    true
+);
+
+//conatcats pagination
+
+actionOnScroll(".messenger-contacts", function () {
+    getContacts();
 });

@@ -8,6 +8,7 @@ use App\Traits\FileUploadTrait;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MessengerController extends Controller
 {
@@ -81,6 +82,129 @@ function messageCard($message,$attachment=false)
 
 }
 
+//fetch mesages from database
+/*
+function fetchMessages(Request $request) {
+    $request->validate([
+        'id'=>'required|integer',
+        'page'=>'required|integer',
+    ]);
+
+    $messages=Message::where(function($query) use ($request) {
+        $query->where('from_id',Auth::user()->id)->where('to_id',$request->id);
+    })->orWhere(function($query) use ($request) {
+        $query->where('from_id',$request->id)->where('to_id',Auth::user()->id);
+    })->latest()->paginate(10);
+
+    if($messages->count() == 0) {
+        return response()->json(['messages'=>'<div class="text-center"><p>No messages found.</p><p> Start a new Conversation</p></div>']);
+    };
+    $messages=$messages->reverse();
 
 
+
+    $response=[
+        'messages'=>$messages,
+        'last_page'=>$messages->lastPage(),
+    ];
+
+   $allMessages='';
+   foreach($messages as $message) {
+    if($message->attachment) {
+        $allMessages.=$this->messageCard($message,true);
+    } else {
+       $allMessages.=$this->messageCard($message);
+    }
+   }
+
+   $response['messages']=$allMessages;
+    return response()->json($response);
+
+}
+
+*/
+function fetchMessages(Request $request) {
+    $request->validate([
+        'id' => 'required|integer',
+        'page' => 'required|integer',
+    ]);
+
+    $messages = Message::where(function($query) use ($request) {
+        $query->where('from_id', Auth::user()->id)
+              ->where('to_id', $request->id);
+    })->orWhere(function($query) use ($request) {
+        $query->where('from_id', $request->id)
+              ->where('to_id', Auth::user()->id);
+    })->latest()->paginate(15);
+
+    if ($messages->isEmpty()) {
+        return response()->json([
+            'messages' => '<div class="text-center"><p>No messages found.</p><p>Start a new Conversation</p></div>',
+        ]);
+    }
+
+    // Preserve pagination information before reversing
+    $paginatedData = [
+        'current_page' => $messages->currentPage(),
+        'last_message'=> $messages->last(),
+        'last_page' => $messages->lastPage(),
+        'total' => $messages->total(),
+        'total_pages' => $messages->lastPage(),
+    ];
+
+    // Reverse the message order
+    $reversedMessages = $messages->getCollection()->reverse();
+
+    $allMessages = '';
+    foreach ($reversedMessages as $message) {
+        if ($message->attachment) {
+            $allMessages .= $this->messageCard($message, true);
+        } else {
+            $allMessages .= $this->messageCard($message);
+        }
+    }
+
+    return response()->json([
+        'messages' => $allMessages,
+        'last_page' => $paginatedData['last_page'],
+        'totalmessages' => $paginatedData['total'],
+        'totalpages' => $paginatedData['total_pages'],
+        'last_message' => $paginatedData['last_message'],
+    ]);
+}
+
+ //fetch conatcts from database
+    function fetchContacts(Request $request) {
+        $users=Message::join('users',function($join){
+             $join->on('messages.from_id','=','users.id')->orOn('messages.to_id','=','users.id');
+        })->where(function($q){
+            $q->where('messages.from_id',Auth::user()->id)->orWhere('messages.to_id',Auth::user()->id);
+        })->where('users.id','!=',Auth::user()->id)->select('users.*',DB::raw('MAX(messages.created_at) max_created_at'))->orderBy('max_created_at','desc')->groupBy('users.id')->paginate(8);
+
+
+
+    if($users->count() >0){
+        $contacts='';
+        foreach($users as $user) {
+           $contacts.=$this->getContactItem($user);
+        }
+
+    }
+    else{
+        $contacts='<div class="text-center"><p>No contacts found.</p></div>';
+    }
+    return response()->json(['contacts'=>$contacts,'last_page'=>$users->lastPage()]);
+
+}
+
+function getContactItem($user){
+    $lastMessage=Message::where('from_id',Auth::user()->id)->where('to_id',$user->id)->orWhere('from_id',$user->id)->where('to_id',Auth::user()->id)->latest()->first();
+
+    $unseenCounter = Message::where('from_id', $user->id)
+                            ->where('to_id', Auth::user()->id)
+                            ->where('seen', 0)
+                            ->count();
+
+    return view('messenger.components.contact-list-item',compact('user','lastMessage','unseenCounter'))->render();
+}
 }
