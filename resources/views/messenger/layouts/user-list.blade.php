@@ -7,7 +7,7 @@
             alt="Chat"
             class="img-fluid"
         /></span>
-        FastChat — Lightning-Fast Messaging <span class="fa-solid fa-bolt" style="color: #0d6efd;"></span>
+        FastChat Lightning-Fast<span class="fa-solid fa-bolt" style="color: #0d6efd;"></span>
 
 
       </h3>
@@ -101,7 +101,7 @@
 
     <div class="wsus__save_message">
       <div class="top">your space</div>
-      <div class="wsus__save_message_center">
+      <div class="wsus__save_message_center messenger-list-item" data-id={{auth()->user()->id}}>
         <div class="icon">
           <i class="far fa-bookmark"></i>
         </div>

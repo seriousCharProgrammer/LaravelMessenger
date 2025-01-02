@@ -11,6 +11,7 @@
       name="description"
       content="Fastchat is a chat application that allows you to chat with your friends and family" />
     <meta name="id" content="" />
+    <meta name="auth_id" content="{{auth()->user()->id}}" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Fastchat</title>
     <link rel="icon" type="image/png" href="{{asset('assets/images/5.png')}}"/>

@@ -1,10 +1,10 @@
 @media (min-width: 1400px) and (max-width: 1600px) {
     .wsus__user_list_area_height {
-        max-height: 400px;
+        /*max-height: 400px;*/
     }
 
     .wsus__chat_area_body {
-        height: 675px;
+        /*height: 675px;*/
     }
 
     .wsus__chat_area {
@@ -57,7 +57,7 @@
     }
 
     .wsus__user_list_area_height {
-        max-height: 400px;
+        /* max-height: 400px;*/
     }
 
     .wsus__single_chat .venobox img {
@@ -66,7 +66,7 @@
     }
 
     .wsus__chat_area_body {
-        height: 670px;
+        /* height: 670px;*/
     }
 
     .wsus__chat_info_gallery li {
@@ -80,7 +80,6 @@
 }
 
 @media (min-width: 992px) and (max-width: 1199.99px) {
-
     .wsus__user_list {
         width: 30%;
     }
@@ -103,11 +102,11 @@
     }
 
     .wsus__user_list_area_height {
-        max-height: 350px;
+        /* max-height: 350px;*/
     }
 
     .wsus__chat_area_body {
-        height: 620px;
+        /* height: 620px;*/
     }
 
     .wsus__chat_info_gallery li {
@@ -143,7 +142,6 @@
 }
 
 @media (min-width: 768px) and (max-width: 991.99px) {
-
     .wsus__user_list {
         width: 40%;
     }
@@ -153,7 +151,7 @@
     }
 
     .wsus__chat_area_body {
-        height: 620px;
+        /*  height: 620px;*/
     }
 
     .wsus__single_chat .venobox img {
@@ -166,7 +164,7 @@
     }
 
     .wsus__user_list_area_height {
-        max-height: 350px;
+        /*max-height: 350px;*/
     }
 
     .show_small_info .wsus__chat_area {
@@ -207,7 +205,7 @@
     }
 
     .wsus__user_list_area_height {
-        max-height: 370px;
+        /* max-height: 370px;*/
     }
 
     .wsus__chat_area {
@@ -228,7 +226,7 @@
     }
 
     .wsus__chat_area_body {
-        height: 660px;
+        /*  height: 660px;*/
     }
 
     .wsus__chat_area_footer {
@@ -285,7 +283,7 @@
     }
 
     .wsus__user_list_area_height {
-        max-height: 370px;
+        /*  max-height: 370px;*/
     }
 
     .wsus__chat_area {
@@ -326,7 +324,7 @@
     }
 
     .wsus__chat_area_body {
-        height: 670px;
+        /* height: 670px;*/
     }
 
     .emojionearea .emojionearea-picker.emojionearea-picker-position-top {
@@ -375,5 +373,4 @@
     .wsus__chat_info_details .photo_gallery::after {
         width: 30%;
     }
-
 }

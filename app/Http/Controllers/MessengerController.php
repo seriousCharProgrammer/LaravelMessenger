@@ -207,4 +207,22 @@ function getContactItem($user){
 
     return view('messenger.components.contact-list-item',compact('user','lastMessage','unseenCounter'))->render();
 }
+
+function updatecontactItem(Request $request){
+    $request->validate([
+        'user_id'=>'required|integer',
+    ]);
+    $user=User::where('id',$request->user_id)->first();
+    if(!$user) {
+        return response()->json(['error'=>'User not found.'],401);
+    }
+
+    $contactItem=$this->getContactItem($user);
+    return response()->json(['contactItem'=>$contactItem],200);
+}
+
+function makeSeen(Request $request) {
+    Message::where('from_id',$request->id)->where('to_id',Auth::user()->id)->where('seen',0)->update(['seen'=>1]);
+    return true;
+}
 }
