@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\Message as MessageEvent;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\User;
@@ -92,6 +93,10 @@ function messageCard($message,$attachment=false)
         $message->attachment=json_encode($attachemntPath);
     };
     $message->save();
+
+    //broadcast the message
+    MessageEvent::dispatch($message->body,$message->to_id);
+
 
     return response()->json(['message'=>$message->attachment?$this->messageCard($message,true):$this->messageCard(message: $message),'tempID'=>$request->temporaryMsgId]);
 

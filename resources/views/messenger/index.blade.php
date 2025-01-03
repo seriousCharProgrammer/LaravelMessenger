@@ -52,7 +52,6 @@
     <script src="{{asset('assets/js/bootstrap.bundle.min.js')}}"></script>
 
     <script src="{{asset('assets/js/Font-Awesome.js')}}"></script>
-
     <script src="{{asset('assets/js/slick.min.js')}}"></script>
     <script src="{{asset('assets/js/venobox.min.js')}}"></script>
     <script src="{{asset('assets/js/emojionearea.min.js')}}"></script>
