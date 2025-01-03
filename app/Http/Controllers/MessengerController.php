@@ -77,10 +77,6 @@ function messageCard($message,$attachment=false)
 }
 
  function sendMessage(Request $request) {
-/*
-    $pusher = new Pusher( '5839b4331f10a3ce2a79','08c97232e3f1ad0d2bf3','1920311',[ 'cluster' => 'eu','useTLS' => true]
-    );
-*/
 
 $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
     );
