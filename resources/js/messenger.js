@@ -5,6 +5,8 @@
 let temporaryMsgId = 0;
 const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY;
 const pusherCluster = import.meta.env.VITE_PUSHER_APP_CLUSTER;
+const channelName = import.meta.env.VITE_CHANNEL_NAME;
+
 const messageForm = $(".message-form"),
     messageInput = $(".message-input"),
     crsf_token = $('meta[name="csrf-token"]').attr("content"),
@@ -596,14 +598,12 @@ function deleteMessage(id) {
 
 // Initialize Pusher with your app key and cluster
 
-window.Pusher.logToConsole = true;
-
 const pusher = new Pusher(pusherKey, {
     cluster: pusherCluster,
 });
 
 // Subscribe to a channel
-const channel = pusher.subscribe(`message.sent.` + auth_id);
+const channel = pusher.subscribe(`${channelName}` + auth_id);
 console.log(channel);
 
 // Listen for an event on the channel
