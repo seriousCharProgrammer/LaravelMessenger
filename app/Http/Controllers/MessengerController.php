@@ -1,20 +1,25 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Pusher\Pusher;
 use App\Events\Message as MessageEvent;
+use App\Events\MessageSent;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\User;
 use App\Traits\FileUploadTrait;
+use Illuminate\Container\Attributes\Log;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log as FacadesLog;
 
 class MessengerController extends Controller
 {
     use FileUploadTrait;
+
+
     function index() :View {
         $favoriteList=Favorite::with('user:id,name,avatar')->where('user_id',Auth::user()->id)->get();
         return view('messenger.layouts.app',compact('favoriteList'));
@@ -73,7 +78,8 @@ function messageCard($message,$attachment=false)
 
  function sendMessage(Request $request) {
 
-
+    $pusher = new Pusher( '5839b4331f10a3ce2a79','08c97232e3f1ad0d2bf3','1920311',[ 'cluster' => 'eu','useTLS' => true]
+    );
 
     $request->validate([
         'message'=>'string|nullable',
@@ -95,7 +101,11 @@ function messageCard($message,$attachment=false)
     $message->save();
 
     //broadcast the message
-    MessageEvent::dispatch($message->body,$message->to_id);
+    MessageSent::dispatch($message,$request->id);
+    event(new MessageSent($message,$request->id));
+
+    $pusher->trigger('message.sent.'.$message->to_id, 'MessageSent', $message);
+
 
 
     return response()->json(['message'=>$message->attachment?$this->messageCard($message,true):$this->messageCard(message: $message),'tempID'=>$request->temporaryMsgId]);

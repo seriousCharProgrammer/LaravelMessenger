@@ -11,10 +11,9 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Auth;
 
-class Message implements ShouldBroadcast
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public $message;
     public $receiver_id;
 
@@ -35,7 +34,7 @@ class Message implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('message.'.$this->receiver_id),
+            new PrivateChannel('message.sent.'.$this->receiver_id),
         ];
     }
 

@@ -221,6 +221,8 @@ function sendMessage() {
                 );
                 tempMsgCardElement.before(data.message);
                 tempMsgCardElement.remove();
+                const myEvent = new Event("messageSent");
+                document.dispatchEvent(myEvent);
             },
             error: function (xhr, status, error) {},
         });
@@ -584,6 +586,30 @@ function deleteMessage(id) {
         }
     });
 }
+
+/****
+ *
+ *
+ * Relaltime listener
+ */
+
+// Initialize Pusher with your app key and cluster
+
+window.Pusher.logToConsole = true;
+
+const pusher = new Pusher("5839b4331f10a3ce2a79", {
+    cluster: "eu",
+});
+console.log("this isssssssssssssss" + auth_id);
+// Subscribe to a channel
+const channel = pusher.subscribe(`message.sent.` + auth_id);
+console.log(channel);
+
+// Listen for an event on the channel
+channel.bind("MessageSent", function (data) {
+    // Handle the event data and display the message
+    console.log("Received message:", data.body, data.from_id, data.to_id);
+});
 
 /**
  * ------------------------------------------------------------
