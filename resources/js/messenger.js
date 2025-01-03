@@ -3,7 +3,8 @@
  */
 
 let temporaryMsgId = 0;
-
+const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY;
+const pusherCluster = import.meta.env.VITE_PUSHER_APP_CLUSTER;
 const messageForm = $(".message-form"),
     messageInput = $(".message-input"),
     crsf_token = $('meta[name="csrf-token"]').attr("content"),
@@ -597,10 +598,10 @@ function deleteMessage(id) {
 
 window.Pusher.logToConsole = true;
 
-const pusher = new Pusher("5839b4331f10a3ce2a79", {
-    cluster: "eu",
+const pusher = new Pusher(pusherKey, {
+    cluster: pusherCluster,
 });
-console.log("this isssssssssssssss" + auth_id);
+
 // Subscribe to a channel
 const channel = pusher.subscribe(`message.sent.` + auth_id);
 console.log(channel);
@@ -608,7 +609,7 @@ console.log(channel);
 // Listen for an event on the channel
 channel.bind("MessageSent", function (data) {
     // Handle the event data and display the message
-    console.log("Received message:", data.body, data.from_id, data.to_id);
+    console.log("Received message:", data);
 });
 
 /**
