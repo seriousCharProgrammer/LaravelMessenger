@@ -135,6 +135,21 @@ function IDinfo(id) {
         },
         success: function (data) {
             fetchMessages(data.fetch.id, true);
+            $(".wsus__chat_info_gallery").html("");
+            //load gallery
+            if (data?.shared_photos) {
+                $(".nothing_share").addClass("d-none");
+
+                $(".wsus__chat_info_gallery").html(data.shared_photos);
+            } else {
+                $(".nothing_share").removeClass("d-none");
+            }
+
+            if (data.favorite > 0) {
+                $(".star").addClass("active");
+            } else {
+                $(".star").removeClass("active");
+            }
             $(".messenger-header").find("img").attr("src", data.fetch.avatar);
             $(".messenger-header").find("h4").text(data.fetch.name);
             $(".messenger-info-view .user_photo")
@@ -224,6 +239,7 @@ function sendTempMessageCard(tempId, message, hasAttachment) {
             ${message.length > 0 ? `<p class="messages">${message}</p>` : ""}
             <span class="clock"><i class="fas fa-clock"></i> now</span>
             <a class="action" href="#"><i class="fas fa-trash"></i></a>
+
           </div>
         </div>
       </div>`;
@@ -233,6 +249,7 @@ function sendTempMessageCard(tempId, message, hasAttachment) {
             <p class="messages">${message}</p>
             <span class="clock"><i class="fas fa-clock"></i> now</span>
             <a class="action" href="#"><i class="fas fa-trash"></i></a>
+
           </div>
         </div>`;
     }
@@ -445,14 +462,140 @@ function makeSeen() {
         },
     });
 }
+/*****
+ *
+ * Favorite
+ */
+
+function star(user_id) {
+    $.ajax({
+        method: "POST",
+        url: "messenger/favorite",
+        data: {
+            _token: crsf_token,
+            user_id: user_id,
+        },
+        success: function (data) {
+            //updateContactItem(user_id);
+            if (data.status == "added") {
+                /*
+                $.ajax({
+                    method: "GET",
+                    url: "messenger/fetch-favorites",
+                    data: {},
+                    success: function (data) {
+                        $(".favourite_user_slider").html(data.favorite_list);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    },
+                });
+*/
+                notyf.success("Added to favorite ");
+            } else if (data.status == "removed") {
+                /*
+                $.ajax({
+                    method: "GET",
+                    url: "messenger/fetch-favorites",
+                    data: {},
+                    success: function (data) {
+                        $(".favourite_user_slider").html(data.favorite_list);
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(error);
+                    },
+                });
+*/
+                notyf.success("Removed from favorite ");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.log(error);
+        },
+    });
+}
+
+/*****
+ *get Favorite users
+ *
+ */
+/*
+function fetchFavoriteList() {
+    $.ajax({
+        method: "GET",
+        url: "messenger/fetch-favorites",
+        data: {},
+        success: function (data) {
+            $(".favourite_user_slider").html(data.favorite_list);
+        },
+        error: function (xhr, status, error) {
+            console.log(error);
+        },
+    });
+}
+*/
+/****
+ *
+ *Delete messages
+ *
+ */
+
+function deleteMessage(id) {
+    Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                method: "DELETE",
+                url: "messenger/delete-message",
+                data: {
+                    _token: crsf_token,
+                    id: id,
+                },
+                beforeSend: function () {
+                    $(`.message-card[data-id="${id}"]`).remove();
+                },
+                success: function (data) {
+                    if (data.success == false) {
+                        Swal.fire({
+                            title: "Canceled!",
+                            text: "Your cannot delete others messages.",
+                            icon: "error",
+                        });
+                    } else if (data.success == true) {
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "Your file has been deleted.",
+                            icon: "success",
+                        });
+                        updateContactItem(getMessengerId());
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                },
+            });
+        }
+    });
+}
+
 /**
  * ------------------------------------------------------------
  * On Dom Load
  * ------------------------------------------------------------
  */
-getContacts();
+
 /*------------------------------*/
 $(document).ready(function () {
+    getContacts();
+
+    //fetchFavoriteList();
     if (window.innerWidth < 768) {
         $("body").find(".go_home").addClass("d-none");
         $("body").on("click", ".messenger-list-item", function () {
@@ -555,4 +698,21 @@ actionOnScroll(
 
 actionOnScroll(".messenger-contacts", function () {
     getContacts();
+});
+
+// favorite add or remove click
+
+$(".star").on("click", function (e) {
+    e.preventDefault();
+    $(this).toggleClass("active");
+    star(getMessengerId());
+});
+/*****
+ *
+ * delete message
+ */
+$("body").on("click", ".dlt-message", function (e) {
+    let id = $(this).data("id");
+    e.preventDefault();
+    deleteMessage(id);
 });

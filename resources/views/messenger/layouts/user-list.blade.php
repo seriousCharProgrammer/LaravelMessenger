@@ -79,25 +79,27 @@
     </div>
   @include('messenger.layouts.search-form')
 
-    <div class="wsus__favourite_user">
-      <div class="top">favourites</div>
-      <div class="row favourite_user_slider">
-        <div class="col-xl-3">
-          <a href="#" class="wsus__favourite_item">
+  <div class="wsus__favourite_user">
+    <div class="top">favourites</div>
+    <div class="row favourite_user_slider">
+      @foreach ($favoriteList as $item )
+      <div class="col-xl-3 messenger-list-item" data-id="{{$item->user?->id}}">
+          <div class="wsus__favourite_item ">
             <div class="img">
               <img
-                src=""
-                alt=""
+                src="{{asset($item->user?->avatar)}}"
+                alt="User"
                 class="img-fluid"
               />
               <span class="inactive"></span>
             </div>
-            <p>mr hasin</p>
-          </a>
+            <p>{{$item->user?->name}}</p>
+          </div>
         </div>
 
-      </div>
+      @endforeach
     </div>
+  </div>
 
     <div class="wsus__save_message">
       <div class="top">your space</div>
@@ -116,7 +118,6 @@
     <div class="wsus__user_list_area">
       <div class="top">All Messages</div>
       <div class="wsus__user_list_area_height messenger-contacts">
-
 
       </div>
 

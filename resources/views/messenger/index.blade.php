@@ -58,13 +58,50 @@
     <script src="{{asset('assets/js/emojionearea.min.js')}}"></script>
     <script src="{{asset('https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js')}}"></script>
     <script src="{{asset('https://unpkg.com/nprogress@0.2.0/nprogress.js')}}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
     <script src="{{asset('assets/js/main.js')}}"></script>
     <script>
-        var notyf = new Notyf({
-            duration: 5000
-        });
+
+        const notyf = new Notyf({
+    duration: 3000,
+    position: {
+        x: 'center',
+        y: 'top'
+    },
+    dismissible: true, // Enables click-to-close functionality
+    ripple: true, // Adds a ripple effect when clicking
+    types: [
+        {
+            type: 'success',
+            background: '#06B6D4',
+            text: '',
+            color: 'white',
+            className: 'notyf__toast--dismissible', // Add class for dismissible styling
+            ripple: true,
+            dismissible: true
+        },
+        {
+            type: 'info',
+            background: '#06B6D4',
+            text: '',
+            color: 'white',
+            className: 'notyf__toast--dismissible',
+            ripple: true,
+            dismissible: true
+        },
+        {
+            type: 'warning',
+            background: '#06B6D4',
+            text: '',
+            color: 'white',
+            className: 'notyf__toast--dismissible',
+            ripple: true,
+            dismissible: true
+        }
+    ]
+});
     </script>
     @stack('scripts')
   </body>

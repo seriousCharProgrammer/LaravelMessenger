@@ -318,10 +318,11 @@ button {
 
 .wsus__favourite_item {
     text-align: center;
-    display: block;
+    cursor: pointer;
     width: 100%;
 }
 
+/************************/
 .wsus__favourite_item .img {
     width: 55px;
     height: 55px;
@@ -363,7 +364,7 @@ button {
 .wsus__favourite_item p {
     font-size: 12px;
     font-weight: 400;
-    display: -webkit-box;
+    display: -webkit-box !important;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
@@ -1190,11 +1191,17 @@ button {
     height: 100%;
     background-image: url("/assets/images/3.png") !important;
     background-size: cover;
-    z-index: 100000;
+    z-index: 1000;
     opacity: 1;
 }
 .main-app-header {
     cursor: pointer;
+}
+.star.active {
+    background: var(--colorPrimary) !important;
+}
+.star.active i {
+    color: white !important;
 }
 /*================================
     Chatting Application End

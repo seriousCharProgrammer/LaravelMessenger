@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\User;
 use App\Traits\FileUploadTrait;
@@ -14,7 +15,8 @@ class MessengerController extends Controller
 {
     use FileUploadTrait;
     function index() :View {
-        return view('messenger.layouts.app');
+        $favoriteList=Favorite::with('user:id,name,avatar')->where('user_id',Auth::user()->id)->get();
+        return view('messenger.layouts.app',compact('favoriteList'));
     }
 
     /**
@@ -47,7 +49,20 @@ $getRecords = $records->map(function($record) {
 
 public function fetchIdInfo(Request $request) {
     $fetch =User::where('id',$request->id)->first();
-    return response()->json(['fetch'=>$fetch]);
+    $favorite=Favorite::where(['user_id'=>Auth::user()->id,'favorite_id'=>$fetch->id])->exists();
+    $sharedPhotos=Message::where(function($query) use ($request) {
+        $query->where('from_id', Auth::user()->id)
+              ->where('to_id', $request->id)->whereNotNull('attachment');
+    })->orWhere(function($query) use ($request) {
+        $query->where('from_id', $request->id)
+              ->where('to_id', Auth::user()->id)->whereNotNull('attachment');
+    })->latest()->get();
+    $content='';
+    foreach($sharedPhotos as $photo) {
+        $content.=view('messenger.components.gallery-item',compact('photo'))->render();
+    }
+
+    return response()->json(['fetch'=>$fetch, 'favorite'=>$favorite,'shared_photos'=>$content]);
 }
 
 function messageCard($message,$attachment=false)
@@ -224,5 +239,77 @@ function updatecontactItem(Request $request){
 function makeSeen(Request $request) {
     Message::where('from_id',$request->id)->where('to_id',Auth::user()->id)->where('seen',0)->update(['seen'=>1]);
     return true;
+}
+function favorite(Request $request) {
+    $request->validate([
+        'user_id'=>'required|integer',
+    ]);
+    $query=Favorite::where('user_id',Auth::user()->id)->where('favorite_id',$request->user_id);
+    $favoriteStatus=$query->exists();
+    if(!$favoriteStatus) {
+        $favorite=new Favorite();
+        $favorite->user_id=Auth::user()->id;
+        $favorite->favorite_id=$request->user_id;
+        $favorite->save();
+        return response()->json(['status'=>'added']);
+    }
+    else
+    {
+        $query->delete();
+        return response()->json(['status'=>'removed']);
+    }
+
+
+
+}
+/*
+// Controller function
+public function fetchFavorites() {
+    $favorites = Favorite::with('user:id,name,avatar')
+        ->where('user_id', Auth::user()->id)
+        ->get();
+
+    $html = view('messenger.components.favorites-list', compact('favorites'))->render();
+    return response()->json(['favorite_list' => $html]);
+}
+    */
+/*
+ @foreach ($favoriteList as $item )
+            <div class="col-xl-3 messenger-list-item" data-id="{{$item->user?->id}}">
+                <div class="wsus__favourite_item ">
+                  <div class="img">
+                    <img
+                      src="{{asset($item->user?->avatar)}}"
+                      alt="User"
+                      class="img-fluid"
+                    />
+                    <span class="inactive"></span>
+                  </div>
+                  <p>{{$item->user?->name}}</p>
+                </div>
+              </div>
+
+            @endforeach
+
+*/
+//delete message
+function deleteMessage(Request $request) {
+
+
+    $request->validate([
+        'id'=>'required|integer',
+    ]);
+    $message=Message::findOrfail($request->id);
+
+    if($message->from_id != Auth::user()->id) {
+        return response()->json(['error'=>'You are not authorized to delete this message.','success'=>false],200);
+    }
+
+    else {
+        $message->delete();
+        return response()->json(['message'=>'Message deleted successfully.','id'=>$request->id,'success'=>true],200);
+    }
+
+
 }
 }
