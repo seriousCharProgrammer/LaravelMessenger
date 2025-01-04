@@ -651,9 +651,13 @@ channel.bind("MessageSent", function (data) {
 
 const onlineChannel = pusher.subscribe("user.online");
 onlineChannel.bind("onlineUser", function (data) {
-    console.log(data);
+    console.log(`this is online` + data);
 });
+const loggedInChannel = pusher.subscribe("user.loggedin");
 
+onlineChannel.bind("LoggedIN", function (data) {
+    console.log(`this is loggedIn` + data);
+});
 /****
  *
  *
