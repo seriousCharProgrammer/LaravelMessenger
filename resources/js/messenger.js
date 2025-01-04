@@ -628,10 +628,10 @@ const pusher = new Pusher(pusherKey, {
     cluster: pusherCluster,
 });
 
-// Subscribe to a channel
+// Subscribe to a channel message channel
 const channel = pusher.subscribe(`${channelName}` + auth_id);
 
-// Listen for an event on the channel
+// Listen for an event on the channel message channel
 channel.bind("MessageSent", function (data) {
     if (getMessengerId() != data.from_id) {
         updateContactItem(data.from_id);
@@ -647,6 +647,13 @@ channel.bind("MessageSent", function (data) {
     }
 });
 
+//listen to online Channel
+
+const onlineChannel = pusher.subscribe("user.online");
+onlineChannel.bind("onlineUser", function (data) {
+    console.log(data);
+});
+
 /****
  *
  *
@@ -658,6 +665,76 @@ function playNotificationSound() {
     sound.play();
 }
 
+/*
+window.addEventListener("beforeunload", (event) => {
+    $.ajax({
+        method: "DELETE",
+        url: "messenger/delete-online-status",
+        data: {
+            _token: crsf_token,
+            id: auth_id,
+        },
+        success: function (data) {
+            console.log(data);
+        },
+        error: function (xhr, status, error) {
+            console.log(error);
+        },
+    });
+});
+*/
+/********************************** */
+let isReload = false;
+
+// Listen for reload click or keyboard shortcut
+window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey && e.key === "r") || e.key === "F5") {
+        isReload = true;
+    }
+});
+
+// Track reload button click
+document.querySelector("body").addEventListener("click", (e) => {
+    if (e.target.matches('[type="reload"]')) {
+        isReload = true;
+    }
+});
+
+window.addEventListener("beforeunload", (event) => {
+    // Check if it's actually closing, not reloading
+    if (!isReload) {
+        $.ajax({
+            method: "DELETE",
+            url: "messenger/delete-online-status",
+            data: {
+                _token: crsf_token,
+                id: auth_id,
+            },
+            success: function (data) {
+                console.log(data);
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    }
+
+    // Reset the flag
+    isReload = false;
+});
+
+/***************************** */
+/*
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+        // Tab is hidden (user switched tabs or minimized window)
+        console.log("Tab is hidden");
+    } else if (document.visibilityState === "visible") {
+        // Tab is visible again
+        console.log("Tab is visible");
+    }
+});
+*/
 /**
  * ------------------------------------------------------------
  * On Dom Load

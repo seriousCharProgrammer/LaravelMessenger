@@ -7,6 +7,7 @@ use App\Events\MessageSent;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\User;
+use App\Models\UserStatus;
 use App\Traits\FileUploadTrait;
 use Illuminate\Container\Attributes\Log;
 use Illuminate\Contracts\View\View;
@@ -15,13 +16,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log as FacadesLog;
 
+
+
 class MessengerController extends Controller
 {
     use FileUploadTrait;
-
+    private $usersLoggedIn = [];
 
     function index() :View {
+
+        $loggedInUsers = UserStatus::where('status', 'logged_in')->get();
+        $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
+        $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
+    );
+
+    if (!in_array(Auth::user()->id, $onlineUsers)) {
+        UserStatus::create([
+            'user_id' => Auth::user()->id,
+            'status' => 'online',
+        ]);
+    }
+         $pusher->trigger('user.online', 'onlineUser', $onlineUsers);
+         $pusher->trigger('user.loggedin', 'LoggedIN', $loggedInUsers);
+
         $favoriteList=Favorite::with('user:id,name,avatar')->where('user_id',Auth::user()->id)->get();
+
         return view('messenger.layouts.app',compact('favoriteList'));
     }
 
@@ -324,4 +343,10 @@ function deleteMessage(Request $request) {
 
 
 }
+
+function deleteOnlineStatus(){
+    UserStatus::where('user_id',Auth::user()->id)->where('status','online')->delete();
+    return response()->json(['status'=>'deleted']);
+}
+
 }
