@@ -6,7 +6,8 @@
         alt="User"
         class="img-fluid"
       />
-      <span class="active"></span>
+      <span class="inactive"></span>
+
     </div>
     <div class="text">
       <h5>{{$user->name}}</h5>

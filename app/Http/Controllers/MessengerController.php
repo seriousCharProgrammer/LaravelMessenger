@@ -25,21 +25,25 @@ class MessengerController extends Controller
 
     function index() :View {
 
-        $loggedInUsers = UserStatus::where('status', 'logged_in')->get();
         $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
-        $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
-    );
+
 
     if (!in_array(Auth::user()->id, $onlineUsers)) {
         UserStatus::create([
             'user_id' => Auth::user()->id,
             'status' => 'online',
         ]);
+        $onlineUsers[] = Auth::user()->id;
     }
-         $pusher->trigger('user.online', 'onlineUser', $onlineUsers);
-         $pusher->trigger('user.loggedin', 'LoggedIN', $loggedInUsers);
+         //$pusher->trigger('user.online', 'onlineUser', $onlineUsers);
+
 
         $favoriteList=Favorite::with('user:id,name,avatar')->where('user_id',Auth::user()->id)->get();
+        $this->fetchOnlineStatus();
+
+
+
+
 
         return view('messenger.layouts.app',compact('favoriteList'));
     }
@@ -221,6 +225,8 @@ function fetchMessages(Request $request) {
 
  //fetch conatcts from database
     function fetchContacts(Request $request) {
+        $loggedInUsers = UserStatus::where('status', 'logged_in')->get()->pluck('user_id')->toArray();
+    $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
         $users=Message::join('users',function($join){
              $join->on('messages.from_id','=','users.id')->orOn('messages.to_id','=','users.id');
         })->where(function($q){
@@ -239,11 +245,17 @@ function fetchMessages(Request $request) {
     else{
         $contacts='<div class="text-center"><p>No contacts found.</p></div>';
     }
+    $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
+    );
+        $pusher->trigger('user.loggedin', 'LoggedIN', $loggedInUsers);
+        $pusher->trigger('user.online', 'onlineUser', $onlineUsers);
     return response()->json(['contacts'=>$contacts,'last_page'=>$users->lastPage()]);
 
 }
 
 function getContactItem($user){
+    $loggedInUsers = UserStatus::where('status', 'logged_in')->get()->pluck('user_id')->toArray();
+    $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
     $lastMessage=Message::where('from_id',Auth::user()->id)->where('to_id',$user->id)->orWhere('from_id',$user->id)->where('to_id',Auth::user()->id)->latest()->first();
 
     $unseenCounter = Message::where('from_id', $user->id)
@@ -251,7 +263,7 @@ function getContactItem($user){
                             ->where('seen', 0)
                             ->count();
 
-    return view('messenger.components.contact-list-item',compact('user','lastMessage','unseenCounter'))->render();
+    return view('messenger.components.contact-list-item',compact('user','lastMessage','unseenCounter','onlineUsers','loggedInUsers'))->render();
 }
 
 function updatecontactItem(Request $request){
@@ -347,6 +359,20 @@ function deleteMessage(Request $request) {
 function deleteOnlineStatus(){
     UserStatus::where('user_id',Auth::user()->id)->where('status','online')->delete();
     return response()->json(['status'=>'deleted']);
+}
+
+function fetchOnlineStatus()
+{
+    $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
+    $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
+    );
+
+        $pusher->trigger('user.online', 'onlineUser', $onlineUsers);
+
+       
+
+
+    return response()->json(['onlineUsers' => $onlineUsers]);
 }
 
 }

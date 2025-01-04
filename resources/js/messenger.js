@@ -649,27 +649,78 @@ channel.bind("MessageSent", function (data) {
 
 //listen to online Channel
 
+// Subscribe to the 'user.online' channel to listen for online users
 const onlineChannel = pusher.subscribe("user.online");
+
+// Bind to the 'onlineUser' event and log the received data
+let activeUsers = new Set(); // Track currently active users
+
+function toggleActive(data) {
+    const newActiveUsers = new Set(data); // Create a set from the new user list
+
+    // Handle users in the new list
+    for (let user of newActiveUsers) {
+        let contactMember = $(`.messenger-list-item[data-id="${user}"]`)
+            .find(".img")
+            .find("span");
+
+        contactMember.removeClass("inactive");
+        contactMember.addClass("active");
+    }
+
+    // Handle users no longer in the list
+    for (let user of activeUsers) {
+        if (!newActiveUsers.has(user)) {
+            let contactMember = $(`.messenger-list-item[data-id="${user}"]`)
+                .find(".img")
+                .find("span");
+            contactMember.removeClass("active");
+            contactMember.addClass("inactive");
+        }
+    }
+
+    // Update the activeUsers set
+    activeUsers = newActiveUsers;
+}
+
 onlineChannel.bind("onlineUser", function (data) {
-    console.log(`this is online` + data);
+    toggleActive(data);
 });
+
+// Subscribe to the 'user.loggedin' channel to listen for logged-in users
 const loggedInChannel = pusher.subscribe("user.loggedin");
 
-onlineChannel.bind("LoggedIN", function (data) {
-    console.log(`this is loggedIn` + data);
+// Bind to the 'LoggedIN' event and log the received data
+loggedInChannel.bind("LoggedIN", function (data) {
+    //console.log("LoggedIN", data);
 });
+
 /****
  *
  *
  * play message sound
  */
-
+async function getOnlineStatus() {
+    await $.ajax({
+        method: "GET",
+        url: "messenger/fetch-online-status",
+        data: {
+            _token: crsf_token,
+            id: auth_id,
+        },
+        success: function (data) {
+            toggleActive(data.onlineUsers);
+        },
+        error: function (xhr, status, error) {
+            console.log(error);
+        },
+    });
+}
 function playNotificationSound() {
     const sound = new Audio(`/default/message-sound.mp3`);
     sound.play();
 }
 
-/*
 window.addEventListener("beforeunload", (event) => {
     $.ajax({
         method: "DELETE",
@@ -679,53 +730,28 @@ window.addEventListener("beforeunload", (event) => {
             id: auth_id,
         },
         success: function (data) {
-            console.log(data);
+            $.ajax({
+                method: "GET",
+                url: "messenger/fetch-online-status",
+                data: {
+                    _token: crsf_token,
+                    id: auth_id,
+                },
+                success: function (data) {
+                    console.log(data);
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                },
+            });
         },
         error: function (xhr, status, error) {
             console.log(error);
         },
     });
 });
-*/
+
 /********************************** */
-let isReload = false;
-
-// Listen for reload click or keyboard shortcut
-window.addEventListener("keydown", (e) => {
-    if ((e.ctrlKey && e.key === "r") || e.key === "F5") {
-        isReload = true;
-    }
-});
-
-// Track reload button click
-document.querySelector("body").addEventListener("click", (e) => {
-    if (e.target.matches('[type="reload"]')) {
-        isReload = true;
-    }
-});
-
-window.addEventListener("beforeunload", (event) => {
-    // Check if it's actually closing, not reloading
-    if (!isReload) {
-        $.ajax({
-            method: "DELETE",
-            url: "messenger/delete-online-status",
-            data: {
-                _token: crsf_token,
-                id: auth_id,
-            },
-            success: function (data) {
-                console.log(data);
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            },
-        });
-    }
-
-    // Reset the flag
-    isReload = false;
-});
 
 /***************************** */
 /*
@@ -739,15 +765,16 @@ document.addEventListener("visibilitychange", () => {
     }
 });
 */
-/**
- * ------------------------------------------------------------
- * On Dom Load
- * ------------------------------------------------------------
- */
+
+/********************************** */
+// On DOM load
 
 /*------------------------------*/
 $(document).ready(function () {
     getContacts();
+    setTimeout(() => {
+        getOnlineStatus();
+    }, 500);
 
     //fetchFavoriteList();
     if (window.innerWidth < 768) {
@@ -774,6 +801,8 @@ $(document).ready(function () {
             debouncedSearch();
         }
     });
+
+    console.log("sexxxxxxxx");
 });
 
 /*
