@@ -900,6 +900,17 @@ button {
     -ms-border-radius: 5px;
     -o-border-radius: 5px;
 }
+/*
+.wsus__chat_area_footer form {
+    width: 100%;
+    background: var(--colorWhite);
+    padding-left: 110px;
+    border-radius: 50px;
+    display: flex;
+    flex-flow: wrap;
+    align-items: center;
+    position: relative;
+}*/
 
 .wsus__chat_area_footer form {
     width: 100%;
@@ -911,7 +922,7 @@ button {
     align-items: center;
     position: relative;
 }
-
+/*
 .wsus__chat_area_footer form .file {
     width: 35px;
     height: 35px;
@@ -930,12 +941,40 @@ button {
     left: 10px;
     top: 8px;
 }
+*/
+.wsus__chat_area_footer form .file {
+    position: absolute;
+    left: 10px;
+    top: 8px;
+}
 
+.wsus__chat_area_footer form .file label {
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    background: var(--colorPrimary);
+    color: var(--colorWhite);
+    line-height: 35px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all linear 0.3s;
+    -webkit-transition: all linear 0.3s;
+    -moz-transition: all linear 0.3s;
+    -ms-transition: all linear 0.3s;
+    -o-transition: all linear 0.3s;
+}
+/*
 .wsus__chat_area_footer form .file:hover {
     background: var(--colorBlack);
     color: var(--colorLightBg);
 }
-
+*/
+.wsus__chat_area_footer form .file label:hover {
+    background: var(--colorBlack);
+    color: var(--colorLightBg);
+}
+/*
 .wsus__chat_area_footer form textarea {
     width: 100%;
     border: none;
@@ -964,6 +1003,38 @@ button {
 }
 
 .wsus__chat_area_footer .send:hover {
+    background: var(--colorPrimary);
+    color: var(--colorLightBg);
+}
+*/
+.wsus__chat_area_footer form textarea {
+    width: 100%;
+    border: none;
+    border-radius: 50px;
+    border-left: 1px solid #e4e7e9;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding: 15px 20px;
+}
+
+.wsus__chat_area_footer form .send {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    background: var(--colorLightBg);
+    color: var(--colorPrimary);
+    border-radius: 50%;
+    transition: all linear 0.3s;
+    -webkit-transition: all linear 0.3s;
+    -moz-transition: all linear 0.3s;
+    -ms-transition: all linear 0.3s;
+    -o-transition: all linear 0.3s;
+}
+
+.wsus__chat_area_footer form .send:hover {
     background: var(--colorPrimary);
     color: var(--colorLightBg);
 }

@@ -217,12 +217,13 @@ function sendMessage() {
                 messageForm.trigger("reset");
                 $(".emojionearea-editor").text("");
                 */
+                $(".no_messages").addClass("d-none");
                 cancelAttachment();
+                makeSeen(true);
             },
             success: function (data) {
                 updateContactItem(getMessengerId());
                 getOnlineStatus();
-
                 const tempMsgCardElement = chatBoxContainer.find(
                     `.message-card[data-id=${data.tempID}]`
                 );
@@ -276,7 +277,11 @@ function recieveMessageCard(e) {
               <img src="${url + e.attachment}" alt="" class="img-fluid w-100" />
                </a>
             </div>
-            ${e.body.length > 0 ? `<p class="messages">${e.body}</p>` : ""}
+            ${
+                e.body != null && e.body.length > 0
+                    ? `<p class="messages">${e.body}</p>`
+                    : ""
+            }
           </div>
         </div>
       </div>`;
@@ -294,7 +299,10 @@ function cancelAttachment() {
     $(".attachment-input").val("");
     $(".attachment-preview").attr("src", "");
     $(".emojionearea-editor").text("");
+    $("input[type='file']").val(null);
     messageForm.trigger("reset");
+    var emojiElt = $("#example1").emojioneArea();
+    emojiElt.data("emojioneArea").setText("");
 }
 
 function showChatbox() {
@@ -454,6 +462,7 @@ function updateContactItem(user_id) {
                 user_id: user_id,
             },
             success: function (data) {
+                messengerContactBox.find(".no_contact").remove();
                 messengerContactBox
                     .find(`.messenger-list-item[data-id="${user_id}"]`)
                     .remove();
@@ -840,6 +849,7 @@ $("body").on("click", ".messenger-list-item", function () {
     $("#search-input").val(""); // Use .val() to set the input value in jQuery
     $(".user_search_list_result").html("");
     page = 1;
+    cancelAttachment();
 });
 
 //send mesage

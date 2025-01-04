@@ -189,7 +189,7 @@ function fetchMessages(Request $request) {
 
     if ($messages->isEmpty()) {
         return response()->json([
-            'messages' => '<div class="text-center"><p>No messages found.</p><p>Start a new Conversation</p></div>',
+            'messages' => '<div class="text-center no_messages"><p>No messages found.</p><p>Start a new Conversation</p></div>',
         ]);
     }
 
@@ -243,7 +243,7 @@ function fetchMessages(Request $request) {
 
     }
     else{
-        $contacts='<div class="text-center"><p>No contacts found.</p></div>';
+        $contacts='<div class="text-center no_contact"><p>No contacts found.</p></div>';
     }
     $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
     );
@@ -369,7 +369,7 @@ function fetchOnlineStatus()
 
         $pusher->trigger('user.online', 'onlineUser', $onlineUsers);
 
-       
+
 
 
     return response()->json(['onlineUsers' => $onlineUsers]);

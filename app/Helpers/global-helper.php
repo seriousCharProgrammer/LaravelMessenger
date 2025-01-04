@@ -36,3 +36,11 @@ if(!function_exists('timeAgo'))
     return date('d M Y',strtotime($timestamp));
     }
 }
+/****/
+
+if(!function_exists('truncate'))
+{
+    function truncate($str,$limit=18){
+        return \Str::limit($str,$limit,'...');
+    }
+}

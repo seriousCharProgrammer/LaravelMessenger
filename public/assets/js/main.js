@@ -107,7 +107,7 @@ $(function () {
     $(".wsus__save_message_center").on("click", function () {
         $(".wsus__chat_app").addClass("show_small_chat");
     });
-
+    /*
     // Heght adjustment
     $(document).ready(function () {
         function adjustHeight() {
@@ -126,4 +126,48 @@ $(function () {
             adjustHeight();
         });
     });
+*/
+    $(document).ready(function () {
+        function adjustHeight() {
+            var windowHeight = $(window).height();
+            $(".wsus__chat_area_body").css("height", windowHeight - 120 + "px");
+            $(".messenger-contacts").css(
+                "max-height",
+                windowHeight - 393 + "px"
+            );
+            $(".user_search_list_result").css({
+                height: windowHeight - 130 + "px",
+            });
+        }
+
+        // Call the function initially
+        adjustHeight();
+
+        // Call the function whenever the window is resized
+        $(window).resize(function () {
+            adjustHeight();
+        });
+    });
+
+    /**** */
+    /*
+    // custom hight adjustment
+    function adjustHeight() {
+        var windowHeight = $(window).height();
+        $(".wsus__chat_area_body").css("height", windowHeight - 120 + "px");
+        $(".messenger-contacts").css("max-height", windowHeight - 393 + "px");
+        $(".wsus__chat_info_gallery").css("height", windowHeight - 360 + "px");
+        $(".user_search_list_result").css({
+            height: windowHeight - 130 + "px",
+        });
+    }
+
+    // Call the function initially
+    adjustHeight();
+
+    // Call the function whenever the window is resized
+    $(window).resize(function () {
+        adjustHeight();
+    });
+    */
 });
