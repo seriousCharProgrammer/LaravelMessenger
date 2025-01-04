@@ -3,6 +3,7 @@
  */
 
 let temporaryMsgId = 0;
+
 const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY;
 const pusherCluster = import.meta.env.VITE_PUSHER_APP_CLUSTER;
 const channelName = import.meta.env.VITE_CHANNEL_NAME;
@@ -220,6 +221,8 @@ function sendMessage() {
             },
             success: function (data) {
                 updateContactItem(getMessengerId());
+                getOnlineStatus();
+
                 const tempMsgCardElement = chatBoxContainer.find(
                     `.message-card[data-id=${data.tempID}]`
                 );
@@ -455,6 +458,7 @@ function updateContactItem(user_id) {
                     .find(`.messenger-list-item[data-id="${user_id}"]`)
                     .remove();
                 messengerContactBox.prepend(data.contactItem);
+
                 if (user_id == getMessengerId()) {
                     updateSelectedContent(user_id);
                 }
@@ -684,6 +688,7 @@ function toggleActive(data) {
 }
 
 onlineChannel.bind("onlineUser", function (data) {
+    console.log(`this is  ${data}`);
     toggleActive(data);
 });
 
@@ -801,8 +806,6 @@ $(document).ready(function () {
             debouncedSearch();
         }
     });
-
-    console.log("sexxxxxxxx");
 });
 
 /*

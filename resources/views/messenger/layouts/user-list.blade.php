@@ -11,13 +11,27 @@
 
 
       </h3>
-      <span
+      <div class="d-flex">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <a class="mr-2" href="route('logout')" onclick="event.preventDefault();
+                                this.closest('form').submit();"> <span
         class="setting"
-        data-bs-toggle="modal"
-        data-bs-target="#exampleModal"
       >
-        <i class="fas fa-user-cog"></i>
-      </span>
+      <i class="fa-solid fa-right-from-bracket" style="color: rgb(194, 17, 17)"></i>
+      </span></a>
+
+        </form>
+
+      <span
+      class="setting"
+      data-bs-toggle="modal"
+      data-bs-target="#exampleModal"
+    >
+      <i class="fas fa-user-cog"></i>
+    </span>
+      </div>
+
 
       <div
         class="modal fade"
