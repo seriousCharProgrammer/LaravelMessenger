@@ -12,7 +12,8 @@ const messageForm = $(".message-form"),
     crsf_token = $('meta[name="csrf-token"]').attr("content"),
     chatBoxContainer = $(".wsus__chat_area_body"),
     messengerContactBox = $(".messenger-contacts"),
-    auth_id = $('meta[name="auth_id"]').attr("content");
+    auth_id = $('meta[name="auth_id"]').attr("content"),
+    url = $('meta[name="url"]').attr("content");
 
 const getMessengerId = () => {
     return $("meta[name=id]").attr("content");
@@ -255,6 +256,31 @@ function sendTempMessageCard(tempId, message, hasAttachment) {
             <span class="clock"><i class="fas fa-clock"></i> now</span>
             <a class="action" href="#"><i class="fas fa-trash"></i></a>
 
+          </div>
+        </div>`;
+    }
+}
+
+function recieveMessageCard(e) {
+    if (e.attachment) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${
+            e.id
+        }">
+          <div class="wsus__single_chat ">
+            <a class="venobox" data-gall="gallery${e.id}" href="${
+            url + e.attachment
+        }">
+              <img src="${url + e.attachment}" alt="" class="img-fluid w-100" />
+               </a>
+            </div>
+            ${e.body.length > 0 ? `<p class="messages">${e.body}</p>` : ""}
+          </div>
+        </div>
+      </div>`;
+    } else {
+        return ` <div class="wsus__single_chat_area message-card" data-id="${e.id}">
+          <div class="wsus__single_chat ">
+            <p class="messages">${e.body}</p>
           </div>
         </div>`;
     }
@@ -604,13 +630,33 @@ const pusher = new Pusher(pusherKey, {
 
 // Subscribe to a channel
 const channel = pusher.subscribe(`${channelName}` + auth_id);
-console.log(channel);
 
 // Listen for an event on the channel
 channel.bind("MessageSent", function (data) {
+    if (getMessengerId() != data.from_id) {
+        updateContactItem(data.from_id);
+        playNotificationSound();
+    }
+
     // Handle the event data and display the message
-    console.log("Received message:", data);
+    //console.log("Received message:", data);
+    let message = recieveMessageCard(data);
+    if (getMessengerId() == data.from_id) {
+        chatBoxContainer.append(message);
+        scrollToBottom(chatBoxContainer);
+    }
 });
+
+/****
+ *
+ *
+ * play message sound
+ */
+
+function playNotificationSound() {
+    const sound = new Audio(`/default/message-sound.mp3`);
+    sound.play();
+}
 
 /**
  * ------------------------------------------------------------
