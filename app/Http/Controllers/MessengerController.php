@@ -232,7 +232,12 @@ function fetchMessages(Request $request) {
     foreach ($reversedMessages as $message) {
         if ($message->attachment) {
             $allMessages .= $this->messageCard($message, true);
-        } else {
+        } else if ($message->voice)
+        {
+            $allMessages .= $this->messageCard($message, false,true);
+        }
+
+        else {
             $allMessages .= $this->messageCard($message);
         }
     }
