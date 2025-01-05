@@ -93,13 +93,24 @@ public function fetchIdInfo(Request $request) {
 
     return response()->json(['fetch'=>$fetch, 'favorite'=>$favorite,'shared_photos'=>$content]);
 }
-
-function messageCard($message,$attachment=false)
+/*
+function messageCard($message,$attachment=false,$voice=false)
 {
-    return view('messenger.components.message-card',compact('message','attachment'))->render();
+    return view('messenger.components.message-card',compact('message','attachment','voice'))->render();
+}
+    */
+    function messageCard($message, $attachment = false, $voice = false)
+{
+    return view('messenger.components.message-card', compact('message', 'attachment', 'voice'))->render();
 }
 
+
+
+
  function sendMessage(Request $request) {
+
+    //dd($request->all());
+
 
 $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
     );
@@ -113,6 +124,7 @@ $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),e
 
     //store the message in db
     $attachemntPath = $this->uploadFile($request,'attachment');
+    $voicepath = $this->uploadVoice($request, 'audio_data');
 
     $message=new Message();
     $message->from_id=Auth::user()->id;
@@ -121,10 +133,21 @@ $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),e
     if($attachemntPath) {
         $message->attachment=json_encode($attachemntPath);
     };
+
+    if($voicepath)
+    {
+        $message->voice=json_encode($voicepath);
+    }
+
     $message->save();
 
     //broadcast the message
-    $pusher->trigger('message.sent.'.$message->to_id, 'MessageSent', $message);
+    $pusher->trigger('message.sent.'.$message->to_id, 'MessageSent', ['id'=>$message->id,'body'=>$message->body,'from_id'=>$message->from_id,'to_id'=>$message->to_id,'attachment'=>json_decode($message->attachment),'voice'=>json_decode($message->voice)]);
+
+    if($message->voice)
+    {
+        return response()->json(['message'=>$this->messageCard($message,false,true),'tempID'=>$request->temporaryMsgId]);
+    }
 
 
 

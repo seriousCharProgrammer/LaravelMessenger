@@ -3,7 +3,10 @@
  */
 
 let temporaryMsgId = 0;
-
+let audioBlobMessage;
+let audioUrl;
+let mediaRecorder;
+let audioChunks = [];
 const pusherKey = import.meta.env.VITE_PUSHER_APP_KEY;
 const pusherCluster = import.meta.env.VITE_PUSHER_APP_CLUSTER;
 const channelName = import.meta.env.VITE_CHANNEL_NAME;
@@ -184,15 +187,19 @@ function IDinfo(id) {
 function sendMessage() {
     temporaryMsgId++;
     let tempID = `temp_${temporaryMsgId}`;
-    //let hasAttachment = !!$(".attachment-input").val();
     let hasAttachment = $(".attachment-input").val() ? true : false;
     const inputvalue = messageInput.val();
 
-    if (inputvalue.length > 0 || hasAttachment) {
+    if (
+        inputvalue.length > 0 ||
+        hasAttachment ||
+        audioBlobMessage !== undefined
+    ) {
         const formData = new FormData($(".message-form")[0]);
         formData.append("id", getMessengerId());
         formData.append("temporaryMsgId", tempID);
         formData.append("_token", crsf_token);
+        formData.append("audio_data", audioBlobMessage);
 
         $.ajax({
             method: "POST",
@@ -222,8 +229,11 @@ function sendMessage() {
                 makeSeen(true);
             },
             success: function (data) {
+                console.log(data);
+                audioBlobMessage = undefined;
                 updateContactItem(getMessengerId());
                 getOnlineStatus();
+                console.log(tempID);
                 const tempMsgCardElement = chatBoxContainer.find(
                     `.message-card[data-id=${data.tempID}]`
                 );
@@ -236,7 +246,7 @@ function sendMessage() {
         });
     }
 }
-
+/*
 function sendTempMessageCard(tempId, message, hasAttachment) {
     if (hasAttachment) {
         return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
@@ -259,12 +269,49 @@ function sendTempMessageCard(tempId, message, hasAttachment) {
             <p class="messages">${message}</p>
             <span class="clock"><i class="fas fa-clock"></i> now</span>
             <a class="action" href="#"><i class="fas fa-trash"></i></a>
-
           </div>
         </div>`;
     }
 }
+    */
 
+function sendTempMessageCard(tempId, message, hasAttachment) {
+    if (hasAttachment) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
+          <div class="wsus__single_chat chat_right">
+            <div class="pre_loader">
+              <div class="spinner-border text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            ${message.length > 0 ? `<p class="messages">${message}</p>` : ""}
+            <span class="clock"><i class="fas fa-clock"></i> now</span>
+            <a class="action" href="#"><i class="fas fa-trash"></i></a>
+          </div>
+        </div>`;
+    } else if (audioBlobMessage !== undefined) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
+          <div class="wsus__single_chat chat_right">
+            <audio controls>
+              <source src="${audioUrl}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+            ${message.length > 0 ? `<p class="messages">${message}</p>` : ""}
+            <span class="clock"><i class="fas fa-clock"></i> now</span>
+            <a class="action" href="#"><i class="fas fa-trash"></i></a>
+          </div>
+        </div>`;
+    } else {
+        return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
+          <div class="wsus__single_chat chat_right">
+            <p class="messages">${message}</p>
+            <span class="clock"><i class="fas fa-clock"></i> now</span>
+            <a class="action" href="#"><i class="fas fa-trash"></i></a>
+          </div>
+        </div>`;
+    }
+}
+/*
 function recieveMessageCard(e) {
     if (e.attachment) {
         return `<div class="wsus__single_chat_area message-card" data-id="${
@@ -272,9 +319,9 @@ function recieveMessageCard(e) {
         }">
           <div class="wsus__single_chat ">
             <a class="venobox" data-gall="gallery${e.id}" href="${
-            url + e.attachment
+            e.attachment
         }">
-              <img src="${url + e.attachment}" alt="" class="img-fluid w-100" />
+              <img src="${e.attachment}" alt="" class="img-fluid w-100" />
                </a>
             </div>
             ${
@@ -287,6 +334,52 @@ function recieveMessageCard(e) {
       </div>`;
     } else {
         return ` <div class="wsus__single_chat_area message-card" data-id="${e.id}">
+          <div class="wsus__single_chat ">
+            <p class="messages">${e.body}</p>
+          </div>
+        </div>`;
+    }
+}
+*/
+
+function recieveMessageCard(e) {
+    if (e.attachment) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${
+            e.id
+        }">
+          <div class="wsus__single_chat ">
+            <a class="venobox" data-gall="gallery${e.id}" href="${
+            e.attachment
+        }">
+              <img src="${e.attachment}" alt="" class="img-fluid w-100" />
+            </a>
+          </div>
+          ${
+              e.body != null && e.body.length > 0
+                  ? `<p class="messages">${e.body}</p>`
+                  : ""
+          }
+        </div>
+      </div>`;
+    } else if (e.voice) {
+        return `<div class="wsus__single_chat_area message-card" data-id="${
+            e.id
+        }">
+          <div class="wsus__single_chat ">
+            <audio controls>
+              <source src="${e.voice}" type="audio/mpeg">
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+          ${
+              e.body != null && e.body.length > 0
+                  ? `<p class="messages">${e.body}</p>`
+                  : ""
+          }
+        </div>
+      </div>`;
+    } else {
+        return `<div class="wsus__single_chat_area message-card" data-id="${e.id}">
           <div class="wsus__single_chat ">
             <p class="messages">${e.body}</p>
           </div>
@@ -646,6 +739,7 @@ const channel = pusher.subscribe(`${channelName}` + auth_id);
 
 // Listen for an event on the channel message channel
 channel.bind("MessageSent", function (data) {
+    console.log(data);
     if (getMessengerId() != data.from_id) {
         updateContactItem(data.from_id);
         playNotificationSound();
@@ -696,8 +790,8 @@ function toggleActive(data) {
     activeUsers = newActiveUsers;
 }
 
+///listen to online users
 onlineChannel.bind("onlineUser", function (data) {
-    console.log(`this is  ${data}`);
     toggleActive(data);
 });
 
@@ -709,6 +803,21 @@ loggedInChannel.bind("LoggedIN", function (data) {
     //console.log("LoggedIN", data);
 });
 
+/*********
+ *
+ * Voice Chat Channels
+ *
+ *
+ */
+
+/***************************************************************** */
+const voiceChannel = pusher.subscribe(`voice.channel.${auth_id}`);
+
+voiceChannel.bind("new-voice-message", function (data) {
+    console.log(data);
+    console.log(getMessengerId());
+});
+/***************************************************************** */
 /****
  *
  *
@@ -912,3 +1021,63 @@ $("body").on("click", ".dlt-message", function (e) {
     e.preventDefault();
     deleteMessage(id);
 });
+
+// Event listener for voiceButton to start recording
+$("body").on("click", "#voiceButton", function () {
+    $("body")
+        .find("#voiceButton")
+        .replaceWith(
+            '<button id="voiceStop" type="button"><i class="fa-solid fa-circle-stop stopRecording"></i></button>'
+        );
+
+    // Check if the browser supports getUserMedia
+
+    navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+            // Create a new MediaRecorder instance
+            mediaRecorder = new MediaRecorder(stream);
+
+            // Push audio data to audioChunks array when data is available
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            // Start recording
+            mediaRecorder.start();
+        })
+        .catch((err) => {
+            console.error("Error accessing microphone:", err);
+        });
+});
+
+// Event listener for voiceStop to stop recording
+$("body").on("click", "#voiceStop", function () {
+    $("body")
+        .find("#voiceStop")
+        .replaceWith(
+            '<button id="voiceButton" type="button"><i class="fa-solid fa-microphone voice"></i></button>'
+        );
+
+    // Stop recording
+    mediaRecorder.stop();
+
+    // Create an audio URL and playback
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        audioBlobMessage = audioBlob;
+        sendMessage();
+        audioUrl = URL.createObjectURL(audioBlobMessage);
+        audioChunks = [];
+        /*
+        let audioUrl = URL.createObjectURL(audioBlobMessage);
+        const audioPlayback = document.getElementById("audioPlayback");
+                audioPlayback.src = audioUrl;
+                console.log("Voice message sent:", data);
+
+        */
+    };
+});
+/***************************************************************** */
+
+/***************************************************************** */

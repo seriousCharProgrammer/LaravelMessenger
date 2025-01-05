@@ -61,6 +61,10 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
+    <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
+
+
+
     <script src="{{asset('assets/js/main.js')}}"></script>
     <script>
 
@@ -104,5 +108,6 @@
 });
     </script>
     @stack('scripts')
+
   </body>
 </html>

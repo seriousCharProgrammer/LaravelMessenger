@@ -3,6 +3,7 @@
 use App\Http\Controllers\MessengerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\VoiceMessageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,5 +39,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::DELETE('messenger/delete-message', [MessengerController::class, 'deleteMessage'])->name('messenger.delete-message');
     Route::DELETE('messenger/delete-online-status', [MessengerController::class, 'deleteOnlineStatus'])->name('messenger.delete-online-status');
     Route::get('messenger/fetch-online-status', [MessengerController::class, 'fetchOnlineStatus'])->name('messenger.fetch-online-status');
+    Route::post('messenger/send-voice-message', [VoiceMessageController::class, 'sendVoiceMessage'])->name('messenger.send-voice-message');
+    Route::get('messenger/fetch-voice-messages', [VoiceMessageController::class, 'fetchVoiceMessages'])->name('messenger.fetch-voice-messages');
 
 });

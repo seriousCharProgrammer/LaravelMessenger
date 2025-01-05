@@ -34,6 +34,7 @@
                       <img src="" alt="User" class="img-fluid attachment-preview">
                       <span class="cancel-attachment"><i class="far fa-times"></i></span>
                   </div>
+
           <form action="#" class="message-form" enctype="multipart/form-data">
             <div class="file">
               <label for="file"><i class="far fa-plus"></i></label>
@@ -48,8 +49,16 @@
               class="message-input"
             ></textarea>
             <button type="submit"><i class="fas fa-paper-plane send"></i></button>
-            <button type="button"><i class="fa-solid fa-microphone voice "></i></button>
+            <button id="voiceButton" type="button"><i class="fa-solid fa-microphone voice "></i></button>
+            {{--}}
+           <button id="voiceButton" type="button"><i class="fa-solid fa-microphone voice "></i></button>
+            {{---}}
+            @include('messenger.components.voice-message')
           </form>
+
+
+
+
         </div>
       </div>
     </div>

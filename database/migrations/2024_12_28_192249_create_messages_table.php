@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('to_id');
             $table->text('body')->nullable();
             $table->json('attachment')->nullable();
+            $table->json('voice')->nullable();
             $table->boolean('seen')->default(0);
 
             $table->timestamps();
