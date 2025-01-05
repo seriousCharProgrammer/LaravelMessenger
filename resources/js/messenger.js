@@ -3,6 +3,7 @@
  */
 
 let temporaryMsgId = 0;
+let mediaStream;
 let audioBlobMessage;
 let audioUrl;
 let mediaRecorder;
@@ -229,7 +230,8 @@ function sendMessage() {
                 makeSeen(true);
             },
             success: function (data) {
-                console.log(data);
+                makeSeen(true);
+
                 audioBlobMessage = undefined;
                 updateContactItem(getMessengerId());
                 getOnlineStatus();
@@ -694,6 +696,7 @@ channel.bind("MessageSent", function (data) {
     console.log(data);
     if (getMessengerId() == data.from_id) {
         chatBoxContainer.append(message);
+        makeSeen();
         scrollToBottom(chatBoxContainer);
     }
 });
@@ -953,6 +956,7 @@ $("body").on("click", ".dlt-message", function (e) {
     deleteMessage(id);
 });
 
+/*
 // Event listener for voiceButton to start recording
 $("body").on("click", "#voiceButton", function () {
     $("body")
@@ -1005,3 +1009,65 @@ $("body").on("click", "#voiceStop", function () {
 /***************************************************************** */
 
 /***************************************************************** */
+
+// Event listener for voiceButton to start recording
+$("body").on("click", "#voiceButton", function () {
+    $("body")
+        .find("#voiceButton")
+        .replaceWith(
+            '<button id="voiceStop" type="button"><i class="fa-solid fa-circle-stop stopRecording"></i></button>'
+        );
+
+    // Check if the browser supports getUserMedia
+    navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+            mediaStream = stream; // Save the media stream
+            mediaRecorder = new MediaRecorder(stream);
+
+            // Push audio data to audioChunks array when data is available
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            // Start recording
+            mediaRecorder.start();
+        })
+        .catch((err) => {
+            console.error("Error accessing microphone:", err);
+        });
+});
+
+// Event listener for voiceStop to stop recording
+$("body").on("click", "#voiceStop", function () {
+    $("body")
+        .find("#voiceStop")
+        .replaceWith(
+            '<button id="voiceButton" type="button"><i class="fa-solid fa-microphone voice"></i></button>'
+        );
+
+    // Stop recording
+    mediaRecorder.stop();
+
+    // Create an audio URL and playback
+    mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+        audioBlobMessage = audioBlob;
+        sendMessage();
+        audioUrl = URL.createObjectURL(audioBlobMessage);
+        audioChunks = [];
+
+        // Stop all tracks on the media stream
+        mediaStream.getTracks().forEach((track) => track.stop());
+    };
+});
+
+/*************************************************************************** */
+
+$("body").on("click", ".phone", function () {
+    alert("clicked");
+});
+
+$("body").on("click", ".video", function () {
+    alert("clicked");
+});
