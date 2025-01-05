@@ -241,6 +241,7 @@ function sendMessage() {
                 tempMsgCardElement.remove();
                 const myEvent = new Event("messageSent");
                 document.dispatchEvent(myEvent);
+                scrollToBottom(chatBoxContainer);
             },
             error: function (xhr, status, error) {},
         });
@@ -353,7 +354,7 @@ function recieveMessageCard(e) {
         }">
               <img src="${e.attachment}" alt="" class="img-fluid w-100" />
             </a>
-          </div>
+
           ${
               e.body != null && e.body.length > 0
                   ? `<p class="messages">${e.body}</p>`
@@ -748,6 +749,7 @@ channel.bind("MessageSent", function (data) {
     // Handle the event data and display the message
     //console.log("Received message:", data);
     let message = recieveMessageCard(data);
+    console.log(data);
     if (getMessengerId() == data.from_id) {
         chatBoxContainer.append(message);
         scrollToBottom(chatBoxContainer);
