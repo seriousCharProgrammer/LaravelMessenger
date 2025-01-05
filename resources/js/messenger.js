@@ -247,34 +247,6 @@ function sendMessage() {
         });
     }
 }
-/*
-function sendTempMessageCard(tempId, message, hasAttachment) {
-    if (hasAttachment) {
-        return `<div class="wsus__single_chat_area message-card" data-id="${tempId}">
-          <div class="wsus__single_chat chat_right">
-            <div class="pre_loader">
-              <div class="spinner-border text-light" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-            </div>
-            ${message.length > 0 ? `<p class="messages">${message}</p>` : ""}
-            <span class="clock"><i class="fas fa-clock"></i> now</span>
-            <a class="action" href="#"><i class="fas fa-trash"></i></a>
-
-          </div>
-        </div>
-      </div>`;
-    } else {
-        return ` <div class="wsus__single_chat_area message-card" data-id="${tempId}">
-          <div class="wsus__single_chat chat_right">
-            <p class="messages">${message}</p>
-            <span class="clock"><i class="fas fa-clock"></i> now</span>
-            <a class="action" href="#"><i class="fas fa-trash"></i></a>
-          </div>
-        </div>`;
-    }
-}
-    */
 
 function sendTempMessageCard(tempId, message, hasAttachment) {
     if (hasAttachment) {
@@ -312,36 +284,6 @@ function sendTempMessageCard(tempId, message, hasAttachment) {
         </div>`;
     }
 }
-/*
-function recieveMessageCard(e) {
-    if (e.attachment) {
-        return `<div class="wsus__single_chat_area message-card" data-id="${
-            e.id
-        }">
-          <div class="wsus__single_chat ">
-            <a class="venobox" data-gall="gallery${e.id}" href="${
-            e.attachment
-        }">
-              <img src="${e.attachment}" alt="" class="img-fluid w-100" />
-               </a>
-            </div>
-            ${
-                e.body != null && e.body.length > 0
-                    ? `<p class="messages">${e.body}</p>`
-                    : ""
-            }
-          </div>
-        </div>
-      </div>`;
-    } else {
-        return ` <div class="wsus__single_chat_area message-card" data-id="${e.id}">
-          <div class="wsus__single_chat ">
-            <p class="messages">${e.body}</p>
-          </div>
-        </div>`;
-    }
-}
-*/
 
 function recieveMessageCard(e) {
     if (e.attachment) {
@@ -878,19 +820,6 @@ window.addEventListener("beforeunload", (event) => {
 
 /********************************** */
 
-/***************************** */
-/*
-document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-        // Tab is hidden (user switched tabs or minimized window)
-        console.log("Tab is hidden");
-    } else if (document.visibilityState === "visible") {
-        // Tab is visible again
-        console.log("Tab is visible");
-    }
-});
-*/
-
 /********************************** */
 // On DOM load
 
@@ -1071,13 +1000,6 @@ $("body").on("click", "#voiceStop", function () {
         sendMessage();
         audioUrl = URL.createObjectURL(audioBlobMessage);
         audioChunks = [];
-        /*
-        let audioUrl = URL.createObjectURL(audioBlobMessage);
-        const audioPlayback = document.getElementById("audioPlayback");
-                audioPlayback.src = audioUrl;
-                console.log("Voice message sent:", data);
-
-        */
     };
 });
 /***************************************************************** */

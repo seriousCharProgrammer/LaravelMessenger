@@ -93,12 +93,7 @@ public function fetchIdInfo(Request $request) {
 
     return response()->json(['fetch'=>$fetch, 'favorite'=>$favorite,'shared_photos'=>$content]);
 }
-/*
-function messageCard($message,$attachment=false,$voice=false)
-{
-    return view('messenger.components.message-card',compact('message','attachment','voice'))->render();
-}
-    */
+
     function messageCard($message, $attachment = false, $voice = false)
 {
     return view('messenger.components.message-card', compact('message', 'attachment', 'voice'))->render();
