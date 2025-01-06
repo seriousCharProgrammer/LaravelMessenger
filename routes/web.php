@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\BlockContactController;
+use App\Http\Controllers\cancelCallController;
 use App\Http\Controllers\MessengerController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\videoCall;
 use App\Http\Controllers\VoiceMessageController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,5 +44,9 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('messenger/fetch-online-status', [MessengerController::class, 'fetchOnlineStatus'])->name('messenger.fetch-online-status');
     Route::post('messenger/send-voice-message', [VoiceMessageController::class, 'sendVoiceMessage'])->name('messenger.send-voice-message');
     Route::get('messenger/fetch-voice-messages', [VoiceMessageController::class, 'fetchVoiceMessages'])->name('messenger.fetch-voice-messages');
-
+    Route::post('messenger/video-call',[videoCall::class,'index'])->name('messenger.video-call');
+    Route::post('messenger/cancel-call',[cancelCallController::class,'index'])->name('messenger.cancel-call');
+    Route::post('messenger/block-contact',[BlockContactController::class,'blockContact'])->name('messenger.block-contact');
+    Route::post('messenger/unblock-contact',[BlockContactController::class,'unblockContact'])->name('messenger.unblock-contact');
+    Route::get('messenger/fetch-blocked-contact',[BlockContactController::class,'fetchBlockContact'])->name('messenger.fetch-blocked-contact');
 });

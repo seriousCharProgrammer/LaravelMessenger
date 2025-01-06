@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Pusher\Pusher;
 use App\Events\Message as MessageEvent;
 use App\Events\MessageSent;
+use App\Models\BlockedContacts;
 use App\Models\Favorite;
 use App\Models\Message;
 use App\Models\User;
@@ -26,7 +27,6 @@ class MessengerController extends Controller
     function index() :View {
 
         $onlineUsers = UserStatus::where('status', 'online')->pluck('user_id')->toArray();
-
 
     if (!in_array(Auth::user()->id, $onlineUsers)) {
         UserStatus::create([
@@ -104,7 +104,6 @@ public function fetchIdInfo(Request $request) {
 
  function sendMessage(Request $request) {
 
-    //dd($request->all());
 
 
 $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
@@ -116,6 +115,12 @@ $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),e
         'temporaryMsgId'=>'required',
         'attachment'=>'nullable|image|max:1024'
     ]);
+    $blockedUser = $request->id;
+    $exists = BlockedContacts::where('id', $blockedUser)->exists();
+    if($exists)
+    {
+        return response()->json(['status' => 'failed', 'message' => 'User already blocked cannpt send messages']);
+    }
 
     //store the message in db
     $attachemntPath = $this->uploadFile($request,'attachment');

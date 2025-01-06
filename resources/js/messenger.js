@@ -1,8 +1,8 @@
 /****
  * Glabal Variables
  */
-
 let temporaryMsgId = 0;
+let BlockedContacts = [];
 let mediaStream;
 let audioBlobMessage;
 let audioUrl;
@@ -186,6 +186,9 @@ function IDinfo(id) {
  */
 
 function sendMessage() {
+    if (BlockedContacts.includes(Number(getMessengerId()))) {
+        alertBlock();
+    }
     temporaryMsgId++;
     let tempID = `temp_${temporaryMsgId}`;
     let hasAttachment = $(".attachment-input").val() ? true : false;
@@ -235,7 +238,7 @@ function sendMessage() {
                 audioBlobMessage = undefined;
                 updateContactItem(getMessengerId());
                 getOnlineStatus();
-                console.log(tempID);
+
                 const tempMsgCardElement = chatBoxContainer.find(
                     `.message-card[data-id=${data.tempID}]`
                 );
@@ -684,7 +687,6 @@ const channel = pusher.subscribe(`${channelName}` + auth_id);
 
 // Listen for an event on the channel message channel
 channel.bind("MessageSent", function (data) {
-    console.log(data);
     if (getMessengerId() != data.from_id) {
         updateContactItem(data.from_id);
         playNotificationSound();
@@ -693,7 +695,7 @@ channel.bind("MessageSent", function (data) {
     // Handle the event data and display the message
     //console.log("Received message:", data);
     let message = recieveMessageCard(data);
-    console.log(data);
+
     if (getMessengerId() == data.from_id) {
         chatBoxContainer.append(message);
         makeSeen();
@@ -758,12 +760,7 @@ loggedInChannel.bind("LoggedIN", function (data) {
  */
 
 /***************************************************************** */
-const voiceChannel = pusher.subscribe(`voice.channel.${auth_id}`);
 
-voiceChannel.bind("new-voice-message", function (data) {
-    console.log(data);
-    console.log(getMessengerId());
-});
 /***************************************************************** */
 /****
  *
@@ -820,6 +817,41 @@ window.addEventListener("beforeunload", (event) => {
         },
     });
 });
+//$button.text().trim()
+function fetchBlockedContact() {
+    $.ajax({
+        method: "GET",
+        url: "messenger/fetch-blocked-contact",
+        data: {},
+        success: function (data) {
+            BlockedContacts = data.blockedList;
+            //console.log(`sexxxxxxxxxxxxxxxxxx ${BlockedContacts}`);
+        },
+    });
+}
+$(".info").on("click", function () {
+    // $(".wsus__chat_app").toggleClass("show_info");
+    if (BlockedContacts.includes(Number(getMessengerId()))) {
+        $("body").find(".block-button").text("Unblock User");
+    }
+});
+function blockTextChanger() {
+    const text = $("body").find(".block-button");
+    console.log(text);
+    console.log(BlockedContacts);
+    console.log(getMessengerId());
+    console.log(BlockedContacts.includes(Number(getMessengerId())));
+    if (BlockedContacts.includes(Number(getMessengerId()))) {
+        $("body").find(".block-button").remove();
+    }
+}
+function alertBlock() {
+    Swal.fire({
+        title: "User Blocked!",
+        text: "Your cannot send him message Unblock to send.",
+        icon: "error",
+    });
+}
 
 /********************************** */
 
@@ -828,6 +860,7 @@ window.addEventListener("beforeunload", (event) => {
 
 /*------------------------------*/
 $(document).ready(function () {
+    fetchBlockedContact();
     getContacts();
     setTimeout(() => {
         getOnlineStatus();
@@ -1063,11 +1096,150 @@ $("body").on("click", "#voiceStop", function () {
 });
 
 /*************************************************************************** */
+//listen to video call
+
+const videoChannel = pusher.subscribe(`video.call.` + auth_id);
+
+// Listen for an event on the channel message channel
+videoChannel.bind("videoCall", function (data) {
+    //console.log(`this is video call data: ${data}`);
+    if (window.matchMedia("(max-width: 768px)").matches) {
+        $(".wsus__user_list").append(data.html);
+    } else {
+        $("body").append(data.html);
+    }
+
+    let to_id_user = data.from_id;
+    $(".decline").on("click", function () {
+        $.ajax({
+            method: "POST",
+            url: "messenger/cancel-call",
+            data: {
+                _token: crsf_token,
+                to_id: to_id_user,
+                from_id: auth_id,
+                processData: false,
+                contentType: false,
+            },
+            success: function (data) {
+                $("#overlay").remove();
+            },
+        });
+    });
+});
+
+//////////LISTEN TO VIDEO CALL CANCEL//////////
+
+const videoChannelCancel = pusher.subscribe(`cancel.video.` + auth_id);
+
+videoChannelCancel.bind("videoCallCancel", function (data) {
+    $("#overlay").remove();
+    $("body").append(data);
+    $("body").on("click", function () {
+        $("#overlay").remove();
+    });
+});
+
+/************************************************************************** */
 
 $("body").on("click", ".phone", function () {
     alert("clicked");
 });
-
 $("body").on("click", ".video", function () {
-    alert("clicked");
+    setTimeout(() => {
+        $.ajax({
+            method: "POST",
+            url: "messenger/video-call",
+            data: {
+                _token: crsf_token,
+                to_id: getMessengerId(),
+                from_id: auth_id,
+                processData: false,
+                contentType: false,
+                cancel: false,
+            },
+            success: function (data) {
+                // Append the received HTML to the body
+                $("body").append(data);
+
+                // Ensure the overlay is styled correctly
+                $("#overlay").css({
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor: "rgba(0, 0, 0, 0.8)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: 1000,
+                });
+                /*
+                // Close overlay when clicking outside the content
+                $("#overlay").on("click", function (e) {
+                    if (e.target === this) {
+                        $(this).remove();
+                    }
+                });
+    */
+                // Close overlay when clicking the "End Call" button
+                $(".end-call-btn").on("click", function () {
+                    $("#overlay").remove();
+                });
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    }, 100);
+});
+
+$("body").on("click", ".block-button", function () {
+    const $button = $(this);
+    if ($button.text() === "block User") {
+        $.ajax({
+            method: "POST",
+            url: "messenger/block-contact",
+            data: {
+                _token: crsf_token,
+                blocked_user_id: getMessengerId(),
+                from_id: auth_id,
+                processData: false,
+                contentType: false,
+            },
+            beforeSend: function () {
+                $button.text("Unblock User");
+            },
+            success: function (data) {
+                BlockedContacts.push(Number(getMessengerId()));
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    } else if ($button.text() === "Unblock User") {
+        $.ajax({
+            method: "POST",
+            url: "messenger/unblock-contact",
+            data: {
+                _token: crsf_token,
+                blocked_user_id: getMessengerId(),
+                from_id: auth_id,
+                processData: false,
+                contentType: false,
+            },
+            beforeSend: function () {
+                $button.text("block User");
+            },
+            success: function (data) {
+                BlockedContacts = BlockedContacts.filter(
+                    (item) => item !== Number(getMessengerId())
+                );
+            },
+            error: function (xhr, status, error) {
+                console.log(error);
+            },
+        });
+    }
 });
