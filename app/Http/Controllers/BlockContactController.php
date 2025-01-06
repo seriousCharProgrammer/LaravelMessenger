@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\BlockedContacts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Pusher\Pusher;
 
 class BlockContactController extends Controller
 {
@@ -53,10 +54,17 @@ class BlockContactController extends Controller
 
         public function fetchBlockContact(Request $request)
         {
+            $pusher = new Pusher( env('VITE_PUSHER_APP_KEY'),env('VITE_PUSHER_APP_SECRET'),env('VITE_PUSHER_APP_ID'),[ 'cluster' => env('VITE_PUSHER_APP_CLUSTER'),'useTLS' => true]
+    );
             $blockedContactIds = BlockedContacts::where('user_id', Auth::user()->id)->pluck('id');
+            $allBlockedusers=BlockedContacts::all()->pluck('id');
+
+            $pusher->trigger('blocked.users','allBlockedusers',$allBlockedusers);
+
+
 
             //dd($blockedContactIds);
-            return response()->json(['status'=>'success','blockedList'=>$blockedContactIds]);
+            return response()->json(['status'=>'success','blockedList'=>$blockedContactIds,'allBlockedusers'=>$allBlockedusers]);
 
 
         }

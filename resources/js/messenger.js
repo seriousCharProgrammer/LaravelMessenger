@@ -3,6 +3,7 @@
  */
 let temporaryMsgId = 0;
 let BlockedContacts = [];
+let allBlockedusers = [];
 let mediaStream;
 let audioBlobMessage;
 let audioUrl;
@@ -186,70 +187,82 @@ function IDinfo(id) {
  */
 
 function sendMessage() {
-    if (BlockedContacts.includes(Number(getMessengerId()))) {
-        alertBlock();
-    }
-    temporaryMsgId++;
-    let tempID = `temp_${temporaryMsgId}`;
-    let hasAttachment = $(".attachment-input").val() ? true : false;
-    const inputvalue = messageInput.val();
-
     if (
-        inputvalue.length > 0 ||
-        hasAttachment ||
-        audioBlobMessage !== undefined
+        BlockedContacts.includes(Number(getMessengerId())) ||
+        allBlockedusers.includes(Number(auth_id))
     ) {
-        const formData = new FormData($(".message-form")[0]);
-        formData.append("id", getMessengerId());
-        formData.append("temporaryMsgId", tempID);
-        formData.append("_token", crsf_token);
-        formData.append("audio_data", audioBlobMessage);
+        alertBlock();
+    } else {
+        temporaryMsgId++;
+        let tempID = `temp_${temporaryMsgId}`;
+        let hasAttachment = $(".attachment-input").val() ? true : false;
+        const inputvalue = messageInput.val();
 
-        $.ajax({
-            method: "POST",
-            url: "messenger/send-message",
-            data: formData,
-            dataType: "JSON",
-            processData: false,
-            contentType: false,
-            beforeSend: function () {
-                if (hasAttachment) {
-                    scrollToBottom(chatBoxContainer);
-                    chatBoxContainer.append(
-                        sendTempMessageCard(tempID, inputvalue, hasAttachment)
+        if (
+            inputvalue.length > 0 ||
+            hasAttachment ||
+            audioBlobMessage !== undefined
+        ) {
+            const formData = new FormData($(".message-form")[0]);
+            formData.append("id", getMessengerId());
+            formData.append("temporaryMsgId", tempID);
+            formData.append("_token", crsf_token);
+            formData.append("audio_data", audioBlobMessage);
+
+            $.ajax({
+                method: "POST",
+                url: "messenger/send-message",
+                data: formData,
+                dataType: "JSON",
+                processData: false,
+                contentType: false,
+                beforeSend: function () {
+                    if (hasAttachment) {
+                        scrollToBottom(chatBoxContainer);
+                        chatBoxContainer.append(
+                            sendTempMessageCard(
+                                tempID,
+                                inputvalue,
+                                hasAttachment
+                            )
+                        );
+                    } else {
+                        scrollToBottom(chatBoxContainer);
+                        chatBoxContainer.append(
+                            sendTempMessageCard(
+                                tempID,
+                                inputvalue,
+                                hasAttachment
+                            )
+                        );
+                    }
+                    /*
+                    messageForm.trigger("reset");
+                    $(".emojionearea-editor").text("");
+                    */
+                    $(".no_messages").addClass("d-none");
+                    cancelAttachment();
+                    makeSeen(true);
+                },
+                success: function (data) {
+                    makeSeen(true);
+
+                    audioBlobMessage = undefined;
+                    updateContactItem(getMessengerId());
+                    getOnlineStatus();
+
+                    const tempMsgCardElement = chatBoxContainer.find(
+                        `.message-card[data-id=${data.tempID}]`
                     );
-                } else {
+                    tempMsgCardElement.before(data.message);
+                    tempMsgCardElement.remove();
+                    const myEvent = new Event("messageSent");
+                    document.dispatchEvent(myEvent);
                     scrollToBottom(chatBoxContainer);
-                    chatBoxContainer.append(
-                        sendTempMessageCard(tempID, inputvalue, hasAttachment)
-                    );
-                }
-                /*
-                messageForm.trigger("reset");
-                $(".emojionearea-editor").text("");
-                */
-                $(".no_messages").addClass("d-none");
-                cancelAttachment();
-                makeSeen(true);
-            },
-            success: function (data) {
-                makeSeen(true);
-
-                audioBlobMessage = undefined;
-                updateContactItem(getMessengerId());
-                getOnlineStatus();
-
-                const tempMsgCardElement = chatBoxContainer.find(
-                    `.message-card[data-id=${data.tempID}]`
-                );
-                tempMsgCardElement.before(data.message);
-                tempMsgCardElement.remove();
-                const myEvent = new Event("messageSent");
-                document.dispatchEvent(myEvent);
-                scrollToBottom(chatBoxContainer);
-            },
-            error: function (xhr, status, error) {},
-        });
+                },
+                error: function (xhr, status, error) {},
+            });
+        }
     }
 }
 
@@ -752,6 +765,13 @@ loggedInChannel.bind("LoggedIN", function (data) {
     //console.log("LoggedIN", data);
 });
 
+const BlockedUserChannel = pusher.subscribe("blocked.users");
+
+// Listen for an event on the channel message channel
+BlockedUserChannel.bind("allBlockedusers", function (data) {
+    allBlockedusers = data;
+});
+
 /*********
  *
  * Voice Chat Channels
@@ -825,7 +845,9 @@ function fetchBlockedContact() {
         data: {},
         success: function (data) {
             BlockedContacts = data.blockedList;
-            //console.log(`sexxxxxxxxxxxxxxxxxx ${BlockedContacts}`);
+            allBlockedusers = data.allBlockedusers;
+            console.log(`sexxxxxxxxxxxxxxxxxx ${allBlockedusers}`);
+            console.log(`sexxxxxxxxxxxxxxxxxx ${BlockedContacts}`);
         },
     });
 }
@@ -991,56 +1013,6 @@ $("body").on("click", ".dlt-message", function (e) {
     deleteMessage(id);
 });
 
-/*
-// Event listener for voiceButton to start recording
-$("body").on("click", "#voiceButton", function () {
-    $("body")
-        .find("#voiceButton")
-        .replaceWith(
-            '<button id="voiceStop" type="button"><i class="fa-solid fa-circle-stop stopRecording"></i></button>'
-        );
-
-    // Check if the browser supports getUserMedia
-
-    navigator.mediaDevices
-        .getUserMedia({ audio: true })
-        .then((stream) => {
-            // Create a new MediaRecorder instance
-            mediaRecorder = new MediaRecorder(stream);
-
-            // Push audio data to audioChunks array when data is available
-            mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
-            };
-
-            // Start recording
-            mediaRecorder.start();
-        })
-        .catch((err) => {
-            console.error("Error accessing microphone:", err);
-        });
-});
-
-// Event listener for voiceStop to stop recording
-$("body").on("click", "#voiceStop", function () {
-    $("body")
-        .find("#voiceStop")
-        .replaceWith(
-            '<button id="voiceButton" type="button"><i class="fa-solid fa-microphone voice"></i></button>'
-        );
-
-    // Stop recording
-    mediaRecorder.stop();
-
-    // Create an audio URL and playback
-    mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
-        audioBlobMessage = audioBlob;
-        sendMessage();
-        audioUrl = URL.createObjectURL(audioBlobMessage);
-        audioChunks = [];
-    };
-});
 /***************************************************************** */
 
 /***************************************************************** */
@@ -1215,6 +1187,7 @@ $("body").on("click", ".block-button", function () {
             },
             success: function (data) {
                 BlockedContacts.push(Number(getMessengerId()));
+                fetchBlockedContact();
             },
             error: function (xhr, status, error) {
                 console.log(error);
@@ -1238,6 +1211,7 @@ $("body").on("click", ".block-button", function () {
                 BlockedContacts = BlockedContacts.filter(
                     (item) => item !== Number(getMessengerId())
                 );
+                fetchBlockedContact();
             },
             error: function (xhr, status, error) {
                 console.log(error);
