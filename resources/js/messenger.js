@@ -846,8 +846,6 @@ function fetchBlockedContact() {
         success: function (data) {
             BlockedContacts = data.blockedList;
             allBlockedusers = data.allBlockedusers;
-            console.log(`sexxxxxxxxxxxxxxxxxx ${allBlockedusers}`);
-            console.log(`sexxxxxxxxxxxxxxxxxx ${BlockedContacts}`);
         },
     });
 }
