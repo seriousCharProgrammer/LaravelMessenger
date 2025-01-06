@@ -835,6 +835,7 @@ $(".info").on("click", function () {
         $("body").find(".block-button").text("Unblock User");
     }
 });
+/*
 function blockTextChanger() {
     const text = $("body").find(".block-button");
     console.log(text);
@@ -845,6 +846,7 @@ function blockTextChanger() {
         $("body").find(".block-button").remove();
     }
 }
+    */
 function alertBlock() {
     Swal.fire({
         title: "User Blocked!",
