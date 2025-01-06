@@ -870,7 +870,7 @@ function blockTextChanger() {
 function alertBlock() {
     Swal.fire({
         title: "User Blocked!",
-        text: "Your cannot send him message Unblock to send.",
+        text: "Your cannot send him message.",
         icon: "error",
     });
 }

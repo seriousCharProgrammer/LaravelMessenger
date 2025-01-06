@@ -58,15 +58,8 @@ class BlockContactController extends Controller
     );
             $blockedContactIds = BlockedContacts::where('user_id', Auth::user()->id)->pluck('id');
             $allBlockedusers=BlockedContacts::all()->pluck('id');
-
             $pusher->trigger('blocked.users','allBlockedusers',$allBlockedusers);
-
-
-
-            //dd($blockedContactIds);
             return response()->json(['status'=>'success','blockedList'=>$blockedContactIds,'allBlockedusers'=>$allBlockedusers]);
-
-
         }
 
 }
