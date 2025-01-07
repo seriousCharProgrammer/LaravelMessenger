@@ -138,7 +138,7 @@
             height: 100vh;
         }
 
-        .overlay {
+        .overlay-recever {
             position: fixed;
             top: 0;
             left: 0;
@@ -230,7 +230,7 @@
     </style>
 </head>
 <body>
-    <div class="overlay" id="overlay">
+    <div class="overlay-recever " id="overlay-recever">
         <div class="notification">
             <div class="caller-info">
                 <h2>Incoming Call</h2>

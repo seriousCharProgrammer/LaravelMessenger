@@ -7,6 +7,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\videoCall;
 use App\Http\Controllers\VoiceMessageController;
+use App\Http\Controllers\WebRtcController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -49,4 +50,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('messenger/block-contact',[BlockContactController::class,'blockContact'])->name('messenger.block-contact');
     Route::post('messenger/unblock-contact',[BlockContactController::class,'unblockContact'])->name('messenger.unblock-contact');
     Route::get('messenger/fetch-blocked-contact',[BlockContactController::class,'fetchBlockContact'])->name('messenger.fetch-blocked-contact');
+    Route::post('messenger/end-call',[videoCall::class,'endCall'])->name('messenger.end-call');
+    Route::post('messenger/signal',[WebRtcController::class,'handleSignal'])->name('messenger.signal');
 });

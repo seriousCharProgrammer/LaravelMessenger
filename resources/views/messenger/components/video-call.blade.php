@@ -36,7 +36,7 @@
         }
 
         .overlay {
-            display: none; /* Initially hidden */
+            display: flex; /* Initially hidden */
             position: fixed;
             top: 0;
             left: 0;
@@ -45,10 +45,11 @@
             background-color: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
-            z-index: 1000;
-        }
+            z-index: 1000 !important;
+         }
 
         .overlay-content {
+            z-index: 1000 !important;
             background-color: var(--colorWhite);
             padding: 20px;
             border-radius: 10px;
@@ -80,7 +81,7 @@
 
         .caller-video video {
             width: 800px;
-            height: 300px;
+            height: 600px;
         }
 
         .receiver-video video {
@@ -120,15 +121,15 @@
 
 
     <!-- Overlay -->
-    <div class="overlay" id="overlay">
+    <div class="overlay videoCall" id="overlay">
         <div class="overlay-content">
             <div class="call-status">Calling...</div>
             <div class="video-container">
-                <div class="caller-video">
-                    <video autoplay muted></video>
+                <div class="caller-video" >
+                    <video id="localVideo" autoplay muted ></video>
                 </div>
-                <div class="receiver-video">
-                    <video autoplay></video>
+                <div class="receiver-video" >
+                    <video id="remoteVideo" autoplay></video>
                 </div>
             </div>
             <button class="end-call-btn">End Call</button>

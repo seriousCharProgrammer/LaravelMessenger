@@ -1068,10 +1068,12 @@ $("body").on("click", "#voiceStop", function () {
 });
 
 /*************************************************************************** */
-//listen to video call
+//listen to video call///////////////////////
 
+/*** ***************************************************************/
 const videoChannel = pusher.subscribe(`video.call.` + auth_id);
-
+let localStream;
+let streamVideo;
 // Listen for an event on the channel message channel
 videoChannel.bind("videoCall", function (data) {
     //console.log(`this is video call data: ${data}`);
@@ -1079,6 +1081,7 @@ videoChannel.bind("videoCall", function (data) {
         $(".wsus__user_list").append(data.html);
     } else {
         $("body").append(data.html);
+        console.log($("#overlay-recever"));
     }
 
     let to_id_user = data.from_id;
@@ -1094,8 +1097,36 @@ videoChannel.bind("videoCall", function (data) {
                 contentType: false,
             },
             success: function (data) {
-                $("#overlay").remove();
+                $("#overlay-recever").remove();
+                endCall();
             },
+        });
+    });
+
+    $(".answer").on("click", function () {
+        if (window.matchMedia("(max-width: 768px)").matches) {
+            $("#overlay-recever").remove();
+            $(".wsus__user_list").append(data.videoHtml);
+        } else {
+            $("#overlay-recever").remove();
+            $("body").append(data.videoHtml);
+        }
+        initializeLocalStream();
+        $(".end-call-btn").on("click", function () {
+            $.ajax({
+                method: "POST",
+                url: "messenger/end-call",
+                data: {
+                    _token: crsf_token,
+                    to_id: getMessengerId(),
+                    from_id: auth_id,
+                    processData: false,
+                    contentType: false,
+                },
+                success: function (data) {
+                    endCall();
+                },
+            });
         });
     });
 });
@@ -1105,68 +1136,183 @@ videoChannel.bind("videoCall", function (data) {
 const videoChannelCancel = pusher.subscribe(`cancel.video.` + auth_id);
 
 videoChannelCancel.bind("videoCallCancel", function (data) {
-    $("#overlay").remove();
+    $("#overlay-recever").remove();
     $("body").append(data);
     $("body").on("click", function () {
         $("#overlay").remove();
     });
+    endCall();
+});
+
+const endVideoCallChannel = pusher.subscribe(`video.end.` + auth_id);
+
+endVideoCallChannel.bind("endCall", function (data) {
+    $("#overlay").remove();
+    $("#overlay-recever").remove();
+    endCall();
 });
 
 /************************************************************************** */
 
-$("body").on("click", ".phone", function () {
-    alert("clicked");
-});
+/********************************************************* */
+
+/***********************/ //////////////
 $("body").on("click", ".video", function () {
-    setTimeout(() => {
-        $.ajax({
-            method: "POST",
-            url: "messenger/video-call",
-            data: {
-                _token: crsf_token,
-                to_id: getMessengerId(),
-                from_id: auth_id,
-                processData: false,
-                contentType: false,
-                cancel: false,
-            },
-            success: function (data) {
-                // Append the received HTML to the body
-                $("body").append(data);
+    if (
+        BlockedContacts.includes(Number(getMessengerId())) ||
+        allBlockedusers.includes(Number(auth_id))
+    ) {
+        alertBlock();
+    } else {
+        setTimeout(() => {
+            $.ajax({
+                method: "POST",
+                url: "messenger/video-call",
+                data: {
+                    _token: crsf_token,
+                    to_id: getMessengerId(),
+                    from_id: auth_id,
+                    processData: false,
+                    contentType: false,
+                    cancel: false,
+                },
+                beforeSend: function () {},
+                success: function (data) {
+                    $("body").append(data);
+                    /************************ */
+                    const myPeer = new Peer({
+                        host: "0.peerjs.com", // PeerJS Cloud server
+                        port: 443, // HTTPS port
+                        path: "/", // Default path
+                        secure: true, // Use HTTPS
+                    });
+                    myPeer.on("open", (id) => {
+                        $.ajax({
+                            method: "POST",
+                            url: "messenger/signal",
+                            data: {
+                                _token: crsf_token,
+                                to_id: getMessengerId(),
+                                peerId: id,
+                                username: auth_id,
+                            },
+                        });
+                    });
 
-                // Ensure the overlay is styled correctly
-                $("#overlay").css({
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: 1000,
-                });
-                /*
-                // Close overlay when clicking outside the content
-                $("#overlay").on("click", function (e) {
-                    if (e.target === this) {
-                        $(this).remove();
-                    }
-                });
-    */
-                // Close overlay when clicking the "End Call" button
-                $(".end-call-btn").on("click", function () {
-                    $("#overlay").remove();
-                });
-            },
-            error: function (xhr, status, error) {
-                console.log(error);
-            },
-        });
-    }, 100);
+                    myPeer.on("call", (call) => {
+                        navigator.mediaDevices
+                            .getUserMedia({ video: true, audio: true })
+                            .then((stream) => {
+                                streamVideo = stream;
+                                call.answer(stream); // Answer the call with your stream
+
+                                call.on("stream", (remoteStream) => {
+                                    // Display the remote stream
+                                    const video =
+                                        document.getElementById("remoteVideo");
+                                    video.srcObject = remoteStream;
+                                    video.play();
+                                });
+                            });
+                    });
+
+                    /********************** */
+                    /*
+                    myPeer.on("open", (id) => {
+                        $.ajax({
+                            method: "POST",
+                            url: "messenger/signal",
+                            data: {
+                                _token: crsf_token,
+                                to_id: getMessengerId(),
+                                peerId: id,
+                                username: auth_id,
+                            },
+                        });
+                    });
+*/
+                    //makeCall();
+                    // Append the received HTML to the body
+                    //$("body").append(data);
+
+                    // Ensure the overlay is styled correctly
+                    $("#overlay").css({
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0, 0, 0, 0.8)",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        zIndex: 1000,
+                    });
+
+                    initializeLocalStream();
+
+                    // Close overlay when clicking the "End Call" button
+                    $(".end-call-btn").on("click", function () {
+                        $.ajax({
+                            method: "POST",
+                            url: "messenger/end-call",
+                            data: {
+                                _token: crsf_token,
+                                to_id: getMessengerId(),
+                                from_id: auth_id,
+                                processData: false,
+                                contentType: false,
+                            },
+                            success: function (data) {
+                                endCall();
+                            },
+                        });
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.log(error);
+                },
+            });
+        }, 100);
+    }
 });
+async function initializeLocalStream() {
+    try {
+        localStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+        });
 
+        const localVideo = document.getElementById("localVideo");
+        localVideo.srcObject = localStream;
+
+        //$("#localVideo").attr("src", localStream);
+    } catch (error) {
+        console.error("Error accessing media devices:", error);
+        alert("Could not access camera or microphone.");
+    }
+}
+function endCall() {
+    $("#overlay").remove();
+
+    if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+        localStream = null;
+    }
+    if (streamVideo) {
+        streamVideo.getTracks().forEach((track) => track.stop());
+        streamVideo = null;
+    }
+
+    const localVideo = document.getElementById("localVideo");
+    const remoteVideo = document.getElementById("remoteVideo");
+    if (localVideo) localVideo.srcObject = null;
+    if (remoteVideo) remoteVideo.srcObject = null;
+}
+
+/****************************** */
+
+/***************************************************************** */
 $("body").on("click", ".block-button", function () {
     const $button = $(this);
     if ($button.text() === "block User") {
@@ -1216,4 +1362,30 @@ $("body").on("click", ".block-button", function () {
             },
         });
     }
+});
+
+const myPeer = new Peer({
+    host: "0.peerjs.com", // PeerJS Cloud server
+    port: 443, // HTTPS port
+    path: "/", // Default path
+    secure: true, // Use HTTPS
+});
+const WebRtcChannel = pusher.subscribe(`webrtc.channel.${auth_id}`);
+WebRtcChannel.bind("user-connected", (data) => {
+    console.log("User connected:", data);
+
+    // Initiate a call
+    navigator.mediaDevices
+        .getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+            streamVideo = stream;
+            const call = myPeer.call(data.peerId, stream);
+
+            call.on("stream", (remoteStream) => {
+                // Display the remote stream
+                const video = document.getElementById("remoteVideo");
+                video.srcObject = remoteStream;
+                video.play();
+            });
+        });
 });
