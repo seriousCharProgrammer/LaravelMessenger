@@ -56,17 +56,20 @@
     <script src="{{asset('assets/js/slick.min.js')}}"></script>
     <script src="{{asset('assets/js/venobox.min.js')}}"></script>
     <script src="{{asset('assets/js/emojionearea.min.js')}}"></script>
-    <script src="{{asset('https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js')}}"></script>
-    <script src="{{asset('https://unpkg.com/nprogress@0.2.0/nprogress.js')}}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script src=" https://cdn.jsdelivr.net/npm/sweetalert2@11.15.10/dist/sweetalert2.all.min.js "></script>
+    <script src=" https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js "></script>
     <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
+
+
     <script src="https://www.WebRTC-Experiment.com/RecordRTC.js"></script>
 
 
 
     <script src="{{asset('assets/js/main.js')}}"></script>
     <script>
+
 
         const notyf = new Notyf({
     duration: 3000,

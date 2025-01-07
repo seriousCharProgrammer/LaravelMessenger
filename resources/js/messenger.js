@@ -1,6 +1,7 @@
 /****
  * Glabal Variables
  */
+
 let temporaryMsgId = 0;
 let BlockedContacts = [];
 let allBlockedusers = [];
@@ -1078,7 +1079,12 @@ let streamVideo;
 videoChannel.bind("videoCall", function (data) {
     //console.log(`this is video call data: ${data}`);
     if (window.matchMedia("(max-width: 768px)").matches) {
-        $(".wsus__user_list").append(data.html);
+        let div = $(".wsus__user_list"); // Select the div directly
+        if (div.hasClass("d-none")) {
+            $("body").append(data.html);
+        } else {
+            $(".wsus__user_list").append(data.html);
+        }
     } else {
         $("body").append(data.html);
         console.log($("#overlay-recever"));
@@ -1105,8 +1111,14 @@ videoChannel.bind("videoCall", function (data) {
 
     $(".answer").on("click", function () {
         if (window.matchMedia("(max-width: 768px)").matches) {
-            $("#overlay-recever").remove();
-            $(".wsus__user_list").append(data.videoHtml);
+            let div = $(".wsus__user_list"); // Select the div directly
+            if (div.hasClass("d-none")) {
+                $("#overlay-recever").remove();
+                $("body").append(data.videoHtml);
+            } else {
+                $("#overlay-recever").remove();
+                $(".wsus__user_list").append(data.videoHtml);
+            }
         } else {
             $("#overlay-recever").remove();
             $("body").append(data.videoHtml);

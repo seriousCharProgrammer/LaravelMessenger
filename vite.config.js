@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import laravel from "laravel-vite-plugin";
-import fs from "fs";
+
 export default defineConfig({
     plugins: [
         laravel({
@@ -12,4 +12,8 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        host: "0.0.0.0", // Allow external connections
+        port: 3000, // Specify the port if needed
+    },
 });
